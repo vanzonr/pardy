@@ -3,7 +3,7 @@
 CC=mpicc
 #CFLAGS=-std=gnu99 -fopenmp -Wall -g -ipo -xHost -Ofast
 #LDFLAGS=-g -fopenmp -O3 -DNDEBUG -xHost -Ofast -ipo
-CFLAGS=-std=gnu99 -fopenmp -Wall -g -flto -march=native -ffast-math
+CFLAGS=-std=gnu99 -fopenmp -O3 -Wall -g -flto -march=native -ffast-math
 LDFLAGS=-g -fopenmp -O3 -DNDEBUG -flto -march=native -ffast-math
 LDLIBS=-lm
 
