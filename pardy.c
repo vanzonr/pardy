@@ -299,7 +299,7 @@ int main(int argc, char* argv[])
     /**/
     system_t sys;
     if (i_am_root) {
-        FILE* file = (argc>1)?fopen(argv[1],"r"):stdin;
+        FILE* file = ((argc>1)?fopen(argv[1],"r"):stdin);
         if (file == NULL) 
             MPI_Abort(MPI_COMM_WORLD, 1);
         key_value_table_t* ini = calloc(1,sizeof(*ini));

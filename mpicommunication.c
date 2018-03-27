@@ -15,8 +15,8 @@ static double periodic(double u, double L)
     return u;
 } 
 
-#define include13(x)            ((x)>=13)?(x)-1:(x)
-#define skip13(x)               ((x)>=13)?(x)+1:(x)
+#define include13(x)            (((x)>=13)?(x)-1:(x))
+#define skip13(x)               (((x)>=13)?(x)+1:(x))
 #define SEND_CELL_TO(direction) do{int so=include13(direction);if(!sys->neighborsendblock[direction]){assert_lt(blockcount[so],maxsendcells);work->blockinit[so][blockcount[so]]=sys->start_of_cell[c];work->blocklens[so][blockcount[so]]=sys->n_in_cell[c];blockcount[so]++;}}while(false)
 
 void detect_and_send_ghost_particles(atom_t* atoms, size_t bufmax,

@@ -14,7 +14,7 @@ typedef signed char tiny_int;
 */
 static inline double max3(double x1, double x2, double x3)
 {
-    double m12 = (x1>x2) ? x1 : x2;
-    return (m12>x3) ? m12 : x3;
+    double m12 = ((x1>x2) ? x1 : x2);
+    return ((m12>x3) ? m12 : x3);
 }
 #endif
