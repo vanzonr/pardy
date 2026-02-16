@@ -1,11 +1,13 @@
 # Makefile using gcc for pardy.c
 
-CC=mpicc
+CXX=mpicxx -I. -DRA_BOUNDSCHECK
 #CFLAGS=-std=gnu99 -fopenmp -Wall -g -ipo -xHost -Ofast
 #LDFLAGS=-g -fopenmp -O3 -DNDEBUG -xHost -Ofast -ipo
-CFLAGS=-std=gnu99 -fopenmp -O3 -Wall -g -flto -march=native -ffast-math -I./ndmalloc
+
+CXXFLAGS=-std=c++17 -fopenmp -O3 -Wall -Wfatal-errors -g -flto -march=native -ffast-math -I./ndmalloc
 LDFLAGS=-g -fopenmp -O3 -DNDEBUG -flto -march=native -ffast-math
-LDLIBS=-lm
+
+LDLIBS=
 
 APPNAME=pardy
 
@@ -18,22 +20,23 @@ all: $(APPNAME)
 .PHONY: clean test
 
 $(APPNAME): $(APPNAME).o lcg.o lattice.o atom.o system.o inifile.o global.o estimates.o parallelwork.o forces.o cells.o mpicommunication.o ndmalloc/ndmalloc.o
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-$(APPNAME).o: $(APPNAME).c lattice.h atom.h system.h inifile.h global.h estimates.h parallelwork.h forces.h cells.h mpicommunication.h
+$(APPNAME).o: $(APPNAME).cpp lattice.h atom.h system.h inifile.h global.h estimates.h parallelwork.h forces.h cells.h mpicommunication.h
 
-ndmalloc/ndmalloc.o: ndmalloc/ndmalloc.c ndmalloc/ndmalloc.h
-atom.o: atom.c atom.h
-cells.o: cells.c cells.h atom.h system.h forces.h global.h parallelwork.h debug.h
-estimates.o: estimates.c global.h estimates.h
-forces.o: forces.c forces.h global.h atom.h parallelwork.h 
-global.o: global.c global.h
-inifile.o: inifile.c inifile.h
-lattice.o: lattice.c lattice.h
-lcg.o: lcg.c lcg.h
-mpicommunication.o: mpicommunication.c mpicommunication.h atom.h system.h parallelwork.h cells.h forces.h global.h debug.h estimates.h
-parallelwork.o: parallelwork.c parallelwork.h atom.h
-pardy.o: pardy.c lcg.h lattice.h debug.h system.h atom.h inifile.h global.h estimates.h parallelwork.h forces.h cells.h mpicommunication.h
-system.o: system.c system.h
+ndmalloc/ndmalloc.o: ndmalloc/ndmalloc.cpp ndmalloc/ndmalloc.h
+atom.o: atom.cpp atom.h
+cells.o: cells.cpp cells.h atom.h system.h forces.h global.h parallelwork.h debug.h
+estimates.o: estimates.cpp global.h estimates.h
+forces.o: forces.cpp forces.h global.h atom.h parallelwork.h 
+global.o: global.cpp global.h
+inifile.o: inifile.cpp inifile.h
+lattice.o: lattice.cpp lattice.h
+lcg.o: lcg.cpp lcg.h
+mpicommunication.o: mpicommunication.cpp mpicommunication.h atom.h system.h parallelwork.h cells.h forces.h global.h debug.h estimates.h
+parallelwork.o: parallelwork.cpp parallelwork.h atom.h
+pardy.o: pardy.cpp lcg.h lattice.h debug.h system.h atom.h inifile.h global.h estimates.h parallelwork.h forces.h cells.h mpicommunication.h
+system.o: system.cpp system.h
 
 clean:
 	\rm -f $(OBJFILES) $(TESTOUTFILES)

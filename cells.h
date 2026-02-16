@@ -4,6 +4,7 @@
 #include "atom.h"
 #include "system.h"
 #include "forces.h"
+#include <rarray>
 
 /**
  * Function to compute a super-cellindex out of the cell indices cx,
@@ -78,9 +79,9 @@ static inline int super_cell_index_2_cz(int c, int minc[], int nc[])
  * Setup cell structure 
  *
  * \param atoms the atoms
- * \param the system to subdivide in celss and organize particles.
+ * \param the system to subdivide in cells and organize particles.
  */
-void cellDivide(atom_t atoms[], system_t *sys);
+void cellDivide(rvector<atom_t>& atoms, system_t& sys);
 
 /**
  * Function to find pairs with particles in neighboring cells given a
@@ -96,7 +97,7 @@ void cellDivide(atom_t atoms[], system_t *sys);
  * \param caz the x-cell index of the cell in which particle ai resides
  * \param nneighbor_cells the number of neighbor cells to consider
  */
-void findPairsFromOtherCells(interaction_pairs_t* p, system_t* sys,
+void findPairsFromOtherCells(interaction_pairs_t& p, system_t& sys,
                              int ai, int cax, int cay, int caz, int nneighbor_cells);
 
 /**
@@ -112,7 +113,7 @@ void findPairsFromOtherCells(interaction_pairs_t* p, system_t* sys,
  *         in the ghost_atoms arrays when constructing the pair list.
  * \param sys a pointer to the system 
  */
-void findGhostPairsFromCells(interaction_pairs_t* p, int ghost_count, atom_t* ghost_atoms, int ghost_offset, system_t* sys);
+void findGhostPairsFromCells(interaction_pairs_t& p, int ghost_count, rvector<atom_t>& ghost_atoms, int ghost_offset, system_t& sys);
 
 /** 
  * The function 'findPairsFromCells collects the pairs of particles
@@ -129,6 +130,6 @@ void findGhostPairsFromCells(interaction_pairs_t* p, int ghost_count, atom_t* gh
  *          pair of particles that interact.
  * \param sys a pointer to the system 
  */
-void findPairsFromCells(interaction_pairs_t* p, system_t* sys);
+void findPairsFromCells(interaction_pairs_t& p, system_t& sys);
 
 #endif

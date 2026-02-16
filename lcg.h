@@ -86,34 +86,34 @@
 
 #include <stdint.h>
 
-typedef struct lcg_t {
+struct lcg_t {
     const uint64_t a;
     const uint64_t b;
     const uint64_t m;
     uint64_t s;
     double x2;
     int have;
-} lcg_t;
+};
 
 lcg_t lcg_init(uint64_t a, uint64_t b, uint64_t m, uint64_t seed);
 lcg_t lcg_init_rand48(int32_t seed);
 lcg_t lcg_init_alt35(int64_t seed);
 
-void lcg_seed(lcg_t* lcg, uint64_t seed);
-void lcg_skip(lcg_t* lcg, int64_t n);
+void lcg_seed(lcg_t& lcg, uint64_t seed);
+void lcg_skip(lcg_t& lcg, int64_t n);
 
-float    lcg_float(lcg_t* lcg);
-double   lcg_double(lcg_t* lcg);
-int32_t  lcg_int32(lcg_t* lcg);
-int32_t  lcg_pint32(lcg_t* lcg);
-uint32_t lcg_uint32(lcg_t* lcg);
-uint64_t lcg_int64(lcg_t* lcg);
+float    lcg_float(lcg_t& lcg);
+double   lcg_double(lcg_t& lcg);
+int32_t  lcg_int32(lcg_t& lcg);
+int32_t  lcg_pint32(lcg_t& lcg);
+uint32_t lcg_uint32(lcg_t& lcg);
+uint64_t lcg_int64(lcg_t& lcg);
 
-double   lcg_normal(lcg_t* lcg);
+double   lcg_normal(lcg_t& lcg);
 
-void     lcg_srand48(lcg_t* lcg, int32_t seed);
-long int lcg_lrand48(lcg_t* lcg);
-long int lcg_mrand48(lcg_t* lcg);
-double   lcg_drand48(lcg_t* lcg);
+void     lcg_srand48(lcg_t& lcg, int32_t seed);
+long int lcg_lrand48(lcg_t& lcg);
+long int lcg_mrand48(lcg_t& lcg);
+double   lcg_drand48(lcg_t& lcg);
 
 #endif

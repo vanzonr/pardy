@@ -1,16 +1,16 @@
 #include "inifile.h"
-#include <string.h>
-#include <assert.h>
+#include <cstring>
+#include <cassert>
 
-const key_value_t* kvt_lookup_entry(const key_value_table_t* table, const char* key)
+const key_value_t* kvt_lookup_entry(const key_value_table_t& table, const char* key)
 {
-    for (int i=0;i<table->length;i++)
-        if (strcmp(key, table->entry[i].key)==0)
-            return table->entry + i;
+    for (int i=0;i<table.length;i++)
+        if (strcmp(key, table.entry[i].key)==0)
+            return table.entry + i;
     return NULL;
 }
 
-const char* kvt_lookup(const key_value_table_t* table, const char* key)
+const char* kvt_lookup(const key_value_table_t& table, const char* key)
 {
     const key_value_t* entry = kvt_lookup_entry(table, key);
     if (entry != NULL)
@@ -21,7 +21,7 @@ const char* kvt_lookup(const key_value_table_t* table, const char* key)
     }
 }
 
-const char* kvt_lookup_with_default(const key_value_table_t* table, const char* key, const char* def)
+const char* kvt_lookup_with_default(const key_value_table_t& table, const char* key, const char* def)
 {
     const key_value_t* entry = kvt_lookup_entry(table, key);
     if (entry != NULL)
@@ -30,28 +30,28 @@ const char* kvt_lookup_with_default(const key_value_table_t* table, const char* 
         return def;
 }
 
-const key_value_t* kvt_begin(const key_value_table_t* table)
+const key_value_t* kvt_begin(const key_value_table_t& table)
 {
-    return table->entry;
+    return table.entry;
 }
 
-const key_value_t* kvt_end(const key_value_table_t* table)
+const key_value_t* kvt_end(const key_value_table_t& table)
 {
-    return table->entry + table->length;
+    return table.entry + table.length;
 }
 
-const key_value_t* kvt_insert(key_value_table_t* table,
+const key_value_t* kvt_insert(key_value_table_t& table,
                               const char key[MAXKEYLEN],
                               const char value[MAXVALUELEN])
 {
     key_value_t* existing_entry = (key_value_t*)kvt_lookup_entry(table, key);
     if (existing_entry==NULL) {
-        int len = table->length;
+        int len = table.length;
         if (len < MAXTABLELEN) {
-            strncpy(table->entry[len].key, key, MAXKEYLEN);
-            strncpy(table->entry[len].value, value, MAXVALUELEN);
-            table->length ++;
-            return table->entry + len;
+            strncpy(table.entry[len].key, key, MAXKEYLEN);
+            strncpy(table.entry[len].value, value, MAXVALUELEN);
+            table.length ++;
+            return table.entry + len;
         } else {
             return NULL;
         }
@@ -61,7 +61,7 @@ const key_value_t* kvt_insert(key_value_table_t* table,
     }
 }
 
-void kvt_read_name(key_value_table_t* table, const char* filename);
+void kvt_read_name(key_value_table_t& table, const char* filename);
 
 static void TRIMWHITESPACE(char** str)
 {
@@ -109,7 +109,7 @@ static char* process_keyval_inputline(char** key, char** value)
     }
 }
 
-static void kvt_read_knowingly(key_value_table_t* table, FILE* f, const char* openfiles)
+static void kvt_read_knowingly(key_value_table_t& table, FILE* f, const char* openfiles)
 {    
     char*  line = NULL;
     size_t len = 0;
@@ -156,7 +156,7 @@ static void kvt_read_knowingly(key_value_table_t* table, FILE* f, const char* op
     free(line);
 }
 
-void kvt_read_name(key_value_table_t* table, const char* filename)
+void kvt_read_name(key_value_table_t& table, const char* filename)
 {
     FILE* f  = fopen(filename, "r");
     if (f == NULL) {
@@ -167,12 +167,12 @@ void kvt_read_name(key_value_table_t* table, const char* filename)
     }
 }
 
-void kvt_read(key_value_table_t* table, FILE* f) {
+void kvt_read(key_value_table_t& table, FILE* f) {
     kvt_read_knowingly(table, f, NULL);
 }
 
 
-int kvt_lookup_int(const key_value_table_t* table, const char* key)
+int kvt_lookup_int(const key_value_table_t& table, const char* key)
 {
     const char* value = kvt_lookup(table, key);
     if (value) {
@@ -184,7 +184,7 @@ int kvt_lookup_int(const key_value_table_t* table, const char* key)
     }
 }
 
-int kvt_lookup_int_with_default(const key_value_table_t* table, const char* key, int def)
+int kvt_lookup_int_with_default(const key_value_table_t& table, const char* key, int def)
 {
     const char* value = kvt_lookup(table, key);
     if (value) {
@@ -196,7 +196,7 @@ int kvt_lookup_int_with_default(const key_value_table_t* table, const char* key,
     }
 }
 
-long kvt_lookup_long(const key_value_table_t* table, const char* key)
+long kvt_lookup_long(const key_value_table_t& table, const char* key)
 {
     const char* value = kvt_lookup(table, key);
     if (value) {
@@ -208,7 +208,7 @@ long kvt_lookup_long(const key_value_table_t* table, const char* key)
     }
 }
 
-long kvt_lookup_long_with_default(const key_value_table_t* table, const char* key, long def)
+long kvt_lookup_long_with_default(const key_value_table_t& table, const char* key, long def)
 {
     const char* value = kvt_lookup(table, key);
     if (value) {
@@ -220,7 +220,7 @@ long kvt_lookup_long_with_default(const key_value_table_t* table, const char* ke
     }
 }
 
-long long kvt_lookup_long_long(const key_value_table_t* table, const char* key)
+long long kvt_lookup_long_long(const key_value_table_t& table, const char* key)
 {
     const char* value = kvt_lookup(table, key);
     if (value) {
@@ -232,7 +232,7 @@ long long kvt_lookup_long_long(const key_value_table_t* table, const char* key)
     }
 }
 
-long long kvt_lookup_long_long_with_default(const key_value_table_t* table, const char* key, long long def)
+long long kvt_lookup_long_long_with_default(const key_value_table_t& table, const char* key, long long def)
 {
     const char* value = kvt_lookup(table, key);
     if (value) {
@@ -244,7 +244,7 @@ long long kvt_lookup_long_long_with_default(const key_value_table_t* table, cons
     }
 }
 
-double kvt_lookup_double(const key_value_table_t* table, const char* key)
+double kvt_lookup_double(const key_value_table_t& table, const char* key)
 {
     const char* value = kvt_lookup(table, key);
     if (value) {
@@ -256,7 +256,7 @@ double kvt_lookup_double(const key_value_table_t* table, const char* key)
     }
 }
 
-double kvt_lookup_double_with_default(const key_value_table_t* table, const char* key, double def)
+double kvt_lookup_double_with_default(const key_value_table_t& table, const char* key, double def)
 {
     const char* value = kvt_lookup(table, key);
     if (value) {

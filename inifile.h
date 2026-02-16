@@ -36,44 +36,44 @@
 #ifndef INIFILEH
 #define INIFILEH
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 
 #define MAXKEYLEN 128
 #define MAXVALUELEN 3968
 #define MAXTABLELEN 1024
 
-typedef struct key_value_t {
+struct key_value_t {
     char key[MAXKEYLEN];
     char value[MAXVALUELEN];
-} key_value_t;
+};
 
-typedef struct key_value_table_t {
+struct key_value_table_t {
     int         length;
     key_value_t entry[MAXTABLELEN];
-} key_value_table_t;
+};
 
-const key_value_t* kvt_lookup_entry(const key_value_table_t* table, const char* key);
-const key_value_t* kvt_begin(const key_value_table_t* table);
-const key_value_t* kvt_end(const key_value_table_t* table);
-const key_value_t* kvt_insert(key_value_table_t* table, const char key[MAXKEYLEN], const char value[MAXVALUELEN]);
+const key_value_t* kvt_lookup_entry(const key_value_table_t& table, const char* key);
+const key_value_t* kvt_begin(const key_value_table_t& table);
+const key_value_t* kvt_end(const key_value_table_t& table);
+const key_value_t* kvt_insert(key_value_table_t& table, const char key[MAXKEYLEN], const char value[MAXVALUELEN]);
 
-const char* kvt_lookup(const key_value_table_t* table, const char* key);
-const char* kvt_lookup_with_default(const key_value_table_t* table, const char* key, const char* def);
+const char* kvt_lookup(const key_value_table_t& table, const char* key);
+const char* kvt_lookup_with_default(const key_value_table_t& table, const char* key, const char* def);
 
-int kvt_lookup_int(const key_value_table_t* table, const char* key);
-int kvt_lookup_int_with_default(const key_value_table_t* table, const char* key, int def);
+int kvt_lookup_int(const key_value_table_t& table, const char* key);
+int kvt_lookup_int_with_default(const key_value_table_t& table, const char* key, int def);
 
-long kvt_lookup_long(const key_value_table_t* table, const char* key);
-long kvt_lookup_long_with_default(const key_value_table_t* table, const char* key, long def);
+long kvt_lookup_long(const key_value_table_t& table, const char* key);
+long kvt_lookup_long_with_default(const key_value_table_t& table, const char* key, long def);
 
-long long kvt_lookup_long_long(const key_value_table_t* table, const char* key);
-long long kvt_lookup_long_long_with_default(const key_value_table_t* table, const char* key, long long def);
+long long kvt_lookup_long_long(const key_value_table_t& table, const char* key);
+long long kvt_lookup_long_long_with_default(const key_value_table_t& table, const char* key, long long def);
 
-double kvt_lookup_double(const key_value_table_t* table, const char* key);
-double kvt_lookup_double_with_default(const key_value_table_t* table, const char* key, double def);
+double kvt_lookup_double(const key_value_table_t& table, const char* key);
+double kvt_lookup_double_with_default(const key_value_table_t& table, const char* key, double def);
 
-void kvt_read_name(key_value_table_t* table, const char* filename);
-void kvt_read(key_value_table_t* table, FILE* f);
+void kvt_read_name(key_value_table_t& table, const char* filename);
+void kvt_read(key_value_table_t& table, FILE* f);
 
 #endif

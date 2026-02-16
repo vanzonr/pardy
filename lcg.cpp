@@ -7,20 +7,19 @@
  */
 
 #include "lcg.h"
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cassert>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 
 const double pi=3.1415926535897932; /* value M_PI not present in c99/c11 */
 
-static void lcg_advance(lcg_t* lcg)
+static void lcg_advance(lcg_t& lcg)
 {
     /* Perform one step in the generator. Not exported, as
      * lcg_skip(lcg,1) does the same */
-    assert(lcg != NULL);
-    lcg->s = (lcg->s * lcg->a + lcg->b) % lcg->m;
+    lcg.s = (lcg.s * lcg.a + lcg.b) % lcg.m;
 }
 
 static uint64_t rand2lcgseed(int32_t seed)
@@ -93,7 +92,7 @@ lcg_t lcg_init_alt35(int64_t seed)
         .a = 34359738368LL,
         .b = 1LL,
         .m = 1LL << 35,
-        .s = seed
+        .s = (uint64_t)seed
     };
 }
 
@@ -108,58 +107,52 @@ lcg_t lcg_init_rand48(int32_t seed)
     };
 }
 
-void lcg_seed(lcg_t* lcg, uint64_t seed)
+void lcg_seed(lcg_t& lcg, uint64_t seed)
 {
-    assert(lcg->a > 0);
-    assert(lcg->b >= 0);
-    assert(lcg->m > 0);
-    assert(0 <= seed && seed < lcg->m);
-    lcg->s = seed;
+    assert(lcg.a > 0);
+    assert(lcg.b >= 0);
+    assert(lcg.m > 0);
+    assert(0 <= seed && seed < lcg.m);
+    lcg.s = seed;
 }
 
-int32_t lcg_int32(lcg_t* lcg)
+int32_t lcg_int32(lcg_t& lcg)
 {
-    assert(lcg != NULL);
     lcg_advance(lcg);
-    int n = hibit(lcg->m)-32;
-    return u64_2_s32(lcg->s, n);
+    int n = hibit(lcg.m)-32;
+    return u64_2_s32(lcg.s, n);
 }
 
-uint32_t lcg_uint32(lcg_t* lcg)
+uint32_t lcg_uint32(lcg_t& lcg)
 {
-    assert(lcg != NULL);
     lcg_advance(lcg);
-    int n = hibit(lcg->m)-32;
-    return u64_2_u32(lcg->s, n);
+    int n = hibit(lcg.m)-32;
+    return u64_2_u32(lcg.s, n);
 }
 
-int32_t lcg_pint32(lcg_t* lcg)
+int32_t lcg_pint32(lcg_t& lcg)
 {
-    assert(lcg != NULL);
     lcg_advance(lcg);
-    int n = hibit(lcg->m)-32;
-    return u64_2_s32_positive(lcg->s, n);
+    int n = hibit(lcg.m)-32;
+    return u64_2_s32_positive(lcg.s, n);
 }
 
-uint64_t lcg_int64(lcg_t* lcg)
+uint64_t lcg_int64(lcg_t& lcg)
 {
-    assert(lcg != NULL);
     lcg_advance(lcg);
-    return lcg->s;
+    return lcg.s;
 }
 
-float lcg_float(lcg_t* lcg)
+float lcg_float(lcg_t& lcg)
 {
-    assert(lcg != NULL);
     lcg_advance(lcg);
-    return (float)(lcg->s)/(float)(lcg->m);
+    return (float)(lcg.s)/(float)(lcg.m);
 }
 
-double lcg_double(lcg_t* lcg)
+double lcg_double(lcg_t& lcg)
 {
-    assert(lcg != NULL);
     lcg_advance(lcg);
-    return (double)(lcg->s)/(double)(lcg->m);
+    return (double)(lcg.s)/(double)(lcg.m);
 }
 
 /* Inline macro for LCG multiplication, i.e. LGC1 *= LGC2.
@@ -179,7 +172,7 @@ double lcg_double(lcg_t* lcg)
         b1 = (b1+tmp*b2)%m;                        \
     } while(0)
 
-void lcg_skip(lcg_t* lcg, int64_t n)
+void lcg_skip(lcg_t& lcg, int64_t n)
 {
     /* O(log(n)) skip ahead function for LCG. The algorithm is a
      * variant of modular exponentiation.
@@ -187,24 +180,23 @@ void lcg_skip(lcg_t* lcg, int64_t n)
      * multiplication replaced by multiplication of LCGs (macro
      * above). If n<0, the function will abort through an assert, or,
      * if compile with NDEBUG defined, will not skip at all. */
-    assert(lcg != NULL);
     assert(n >= 0);
     uint64_t a = 1;
     uint64_t b = 0;
-    uint64_t basea = lcg->a % lcg->m;
-    uint64_t baseb = lcg->b % lcg->m;
+    uint64_t basea = lcg.a % lcg.m;
+    uint64_t baseb = lcg.b % lcg.m;
     while (n > 0) {
         if ((n % 2) == 1)
-            LCGMULRIGHT(a,b,basea,baseb,lcg->m);
+            LCGMULRIGHT(a,b,basea,baseb,lcg.m);
         n >>= 1;
-        LCGMULRIGHT(basea,baseb,basea,baseb,lcg->m);
+        LCGMULRIGHT(basea,baseb,basea,baseb,lcg.m);
     }
-    lcg->s = (lcg->s * a + b) % lcg->m;
+    lcg.s = (lcg.s * a + b) % lcg.m;
 }
 
 /* rand48 replacements */
 
-void lcg_srand48(lcg_t* lcg, int32_t seed)
+void lcg_srand48(lcg_t& lcg, int32_t seed)
 {
     /* srand48 is used to initialize the internal buffer r(n) of
      * drand48, lrand48, and mrand48 such that the 32 bits of the seed
@@ -213,7 +205,7 @@ void lcg_srand48(lcg_t* lcg, int32_t seed)
     lcg_seed(lcg, rand2lcgseed(seed));
 }
 
-long lcg_lrand48(lcg_t* lcg)
+long lcg_lrand48(lcg_t& lcg)
 {
     /* lrand48 and nrand48 return values of type long in the range [0,
      * 2**31-1]. The high-order (31) bits of r(n+1) are loaded into
@@ -222,7 +214,7 @@ long lcg_lrand48(lcg_t* lcg)
     return u64_2_s32_positive(lcg_int64(lcg),16);
 }
 
-long lcg_mrand48(lcg_t* lcg)
+long lcg_mrand48(lcg_t& lcg)
 {
     /* mrand48 and jrand48 return values of type long in the range
      * [-2**31, 2**31-1]. The high-order (32) bits of r(n+1) are
@@ -230,7 +222,7 @@ long lcg_mrand48(lcg_t* lcg)
     return u64_2_s32(lcg_int64(lcg),16);
 }
 
-double lcg_drand48(lcg_t* lcg)
+double lcg_drand48(lcg_t& lcg)
 {
     /* drand48 and erand48 return values of type double. The full 48
      * bits of r(n+1) are loaded into the mantissa of the returned
@@ -245,20 +237,20 @@ double lcg_drand48(lcg_t* lcg)
     return (z * (z * (z * bitfill.x[0] + bitfill.x[1]) + bitfill.x[2]));
 }
 
-double lcg_normal(lcg_t* lcg)
+double lcg_normal(lcg_t& lcg)
 {
     double fac, y1, y2, x1; 
-    if (lcg->have == 1) {  /* already one available ? */
-        lcg->have = 0;
-        return lcg->x2;
+    if (lcg.have == 1) {  /* already one available ? */
+        lcg.have = 0;
+        return lcg.x2;
     } else {
         /* generate a pair of random variables */
         y1        = lcg_drand48(lcg);
         y2        = lcg_drand48(lcg);
         fac       = sqrt(-2*log(y1));
-        lcg->have = 1;
+        lcg.have = 1;
         x1        = fac*sin(2*pi*y2); /* x1 and x2 are now gaussian */
-        lcg->x2   = fac*cos(2*pi*y2); /* so store one */
+        lcg.x2   = fac*cos(2*pi*y2); /* so store one */
         return x1;              /* and return the other. */
     }
 }

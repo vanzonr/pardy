@@ -1,6 +1,8 @@
 #ifndef ESTIMATESH
 #define ESTIMATESH
 
+#include "global.h"
+
 /** 
  * Function to estimate how many particle this region will hold at
  * most. Based on the volume of the region and its density. Must be

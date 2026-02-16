@@ -216,11 +216,11 @@ int ndreg_add(ndreg_ptr_t key, ndreg_int* clue)
     if (nreg == nregmax) { 
         
         if (nregmax == nregmaxinit) {
-            newkeyreg = malloc((nregmaxinit+nreginc)*sizeof(ndreg_ptr_t));
+            newkeyreg = (const void**)malloc((nregmaxinit+nreginc)*sizeof(ndreg_ptr_t));
             if (newkeyreg!=NULL) 
                 memcpy(newkeyreg, keyreg, nregmaxinit*sizeof(ndreg_ptr_t));
         } else           
-            newkeyreg = realloc(keyreg,(nregmax+nreginc)*sizeof(ndreg_ptr_t));
+            newkeyreg = (const void**)realloc(keyreg,(nregmax+nreginc)*sizeof(ndreg_ptr_t));
 
         if (newkeyreg == NULL) {           
             internal_lock_off();
@@ -291,7 +291,7 @@ int ndreg_remove(ndreg_ptr_t key, ndreg_int clue)
             ndreg_int newnregmax = nregmax-nreginc; 
 
             /* - perform the reallocation */
-            ndreg_ptr_t* newkeyreg = realloc(keyreg, 
+            ndreg_ptr_t* newkeyreg = (ndreg_ptr_t*)realloc(keyreg, 
                                             newnregmax*sizeof(ndreg_ptr_t));
             /* - check if successfull */
             if (newkeyreg != NULL) {

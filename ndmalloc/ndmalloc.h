@@ -10,10 +10,6 @@
 #ifndef _NDMALLOC_RVZ_
 #define _NDMALLOC_RVZ_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stddef.h>   /* defines size_t */
 
 /* Mimic the regular malloc/free/calloc/realloc functions for
@@ -136,10 +132,6 @@ const size_t* ndshape    (const void* ptr);
 #define autoview5(a)  ndview(a,sizeof(*****(a)),5,sizeof(a)/sizeof(*(a)),sizeof(*(a))/sizeof(**(a)),sizeof(**(a))/sizeof(***(a)),sizeof(***(a))/sizeof(****(a)),sizeof(****(a))/sizeof(*****(a)))
 #define autoview6(a)  ndview(a,sizeof(******(a)),6,sizeof(a)/sizeof(*(a)),sizeof(*(a))/sizeof(**(a)),sizeof(**(a))/sizeof(***(a)),sizeof(***(a))/sizeof(****(a)),sizeof(****(a))/sizeof(*****(a))),sizeof(*****(a))/sizeof(******(a)))
 #define autoview7(a)  ndview(a,sizeof(*******(a)),7,sizeof(a)/sizeof(*(a)),sizeof(*(a))/sizeof(**(a)),sizeof(**(a))/sizeof(***(a)),sizeof(***(a))/sizeof(****(a)),sizeof(****(a))/sizeof(*****(a))),sizeof(*****(a))/sizeof(******(a))),sizeof(******(a))/sizeof(*******(a)))
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
 

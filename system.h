@@ -1,11 +1,10 @@
 /* system.h - defines the system_t type and its mpi type */
 #ifndef SYSTEMH
 #define SYSTEMH
-#include "mpi.h"
-#include <stddef.h>
-#include <stdbool.h>
+#include <mpi.h>
+#include <cstddef>
 
-typedef struct system_t {
+struct system_t {
     long long Ntot;      /**< number of particles in the full domain (parameter) */
     double    rho;       /**< density of the system (parameter)*/
     double    T0;        /**< initial temperature (parameter) */
@@ -51,12 +50,11 @@ typedef struct system_t {
     double    cellsize[3]; /**< size of the cells in each direction */
     int*      start_of_cell; /**< position in atom[] of the first particles in each cell (1d using a super index) */
     int*      n_in_cell; /**< number of particles in each cell (1d using a super index) (i.e., subsequent n_in_cell-1 particles are also in that cell */
-} system_t;
-
+};
 
 extern MPI_Datatype MPI_PARAMETERS;
 
-bool sanity_check(system_t* sys, double rc, bool i_am_root);
+bool sanity_check(system_t& sys, double rc, bool i_am_root);
 MPI_Datatype define_MPI_PARAMETERS();
 
 /* what is where in neighborranks ? */

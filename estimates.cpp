@@ -1,6 +1,6 @@
-#include "global.h"
 #include "estimates.h"
-#include <math.h>
+#include <cmath>
+#include <algorithm>
 #include "global.h"
 
 int estimateMaxNSelf(int Nmin, double rho, double localL[DIM])
@@ -24,9 +24,9 @@ int estimateMaxNGhostPerFaceNeighbor(double rho, double localL[DIM], double cell
     reason), then allows for 55% systematic variations in the density
     and for sqrt(N) statistical fluctuations in the number of
     particles. */
-    double nonfluctuatingN = 6.0 + 1.55*max3(localL[0]*localL[1]*cellsize[2],
-                                             localL[0]*localL[2]*cellsize[1],
-                                             localL[1]*localL[2]*cellsize[0])*rho;
+    double nonfluctuatingN = 6.0 + 1.55*std::max({localL[0]*localL[1]*cellsize[2],
+                                                  localL[0]*localL[2]*cellsize[1],
+                                                  localL[1]*localL[2]*cellsize[0]})*rho;
     return (int)(nonfluctuatingN + 2.0*sqrt(nonfluctuatingN));
 }
 
@@ -56,10 +56,10 @@ int estimateMaxNGhostPerEdgeNeighbor(double rho, double localL[DIM], double cell
     density.  The formula uses a base of 6 particles (for no reason),
     then allows for 55% systematic variations in the density and for
     sqrt(N) statistical fluctuations in the number of particles. */
-    double nonfluctuatingN = 6.0 + 1.55*max3(
+    double nonfluctuatingN = 6.0 + 1.55*std::max({
             localL[0]*cellsize[1]*cellsize[2],
             localL[1]*cellsize[0]*cellsize[2],
-            localL[2]*cellsize[1]*cellsize[0])*rho;
+            localL[2]*cellsize[1]*cellsize[0]})*rho;
     return (int)(nonfluctuatingN + 2.0*sqrt(nonfluctuatingN));
 }
 

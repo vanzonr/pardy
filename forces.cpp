@@ -1,25 +1,25 @@
 #include "forces.h"
 #include <ndmalloc.h>
 #include <omp.h>
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 
-void interaction_pairs_alloc(interaction_pairs_t* p, long long Npairsmax)
+void interaction_pairs_alloc(interaction_pairs_t& p, long long Npairsmax)
 {
-    p->npairs = Npairsmax;
-    p->pairi  = ndmalloc(sizeof(int), 1, Npairsmax);
-    p->pairj  = ndmalloc(sizeof(int), 1, Npairsmax);
-    p->dj     = ndmalloc(sizeof(packed_int), 1, Npairsmax);
+    p.npairs = Npairsmax;
+    p.pairi  = (int*)ndmalloc(sizeof(int), 1, Npairsmax);
+    p.pairj  = (int*)ndmalloc(sizeof(int), 1, Npairsmax);
+    p.dj     = (packed_int*)ndmalloc(sizeof(packed_int), 1, Npairsmax);
 }
 
-void interaction_pairs_free(interaction_pairs_t* p)
+void interaction_pairs_free(interaction_pairs_t& p)
 {
-    ndfree(p->pairi);
-    ndfree(p->pairj);
-    ndfree(p->dj);
+    ndfree(p.pairi);
+    ndfree(p.pairj);
+    ndfree(p.dj);
 }
 
-double computeForces(int N, atom_t atoms[], interaction_pairs_t* p, double L, bool accum, parallel_work_t* work)
+double computeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, double L, bool accum, parallel_work_t& work)
 /* accum: true if the forces need to be added too, false if the forces should be replaced 
    returns the potential enenty.*/
 {
@@ -27,12 +27,12 @@ double computeForces(int N, atom_t atoms[], interaction_pairs_t* p, double L, bo
     int nth = 0;
     #pragma omp parallel reduction(max:nth)
     nth = omp_get_num_threads();    
-    assert(ndsize(work->atomfx,0) >= nth);
-    assert(ndsize(work->atomfy,0) >= nth);
-    assert(ndsize(work->atomfz,0) >= nth);
-    assert(ndsize(work->atomfx,1) >= N);
-    assert(ndsize(work->atomfy,1) >= N);
-    assert(ndsize(work->atomfz,1) >= N);
+    assert(ndsize(work.atomfx,0) >= nth);
+    assert(ndsize(work.atomfy,0) >= nth);
+    assert(ndsize(work.atomfz,0) >= nth);
+    assert(ndsize(work.atomfx,1) >= N);
+    assert(ndsize(work.atomfy,1) >= N);
+    assert(ndsize(work.atomfz,1) >= N);
     #endif
     /* initialize energy and forces to zero */
     double Usum = 0;
@@ -46,12 +46,12 @@ double computeForces(int N, atom_t atoms[], interaction_pairs_t* p, double L, bo
     {
         int c = omp_get_thread_num();
         for (size_t k = 0; k < N; ++k)
-            work->atomfx[c][k] = work->atomfy[c][k] = work->atomfz[c][k] = 0.0;
+            work.atomfx[c][k] = work.atomfy[c][k] = work.atomfz[c][k] = 0.0;
         #pragma omp for 
-        for (size_t k = 0; k < p->npairs; ++k) {
-            int i = p->pairi[k];
-            int j = p->pairj[k];
-            int d = p->dj[k];
+        for (size_t k = 0; k < p.npairs; ++k) {
+            int i = p.pairi[k];
+            int j = p.pairj[k];
+            int d = p.dj[k];
             /* determine distance in periodic geometry */
             double dx = atoms[i].rx - atoms[j].rx - L*pack2x(d);
             double dy = atoms[i].ry - atoms[j].ry - L*pack2y(d); 
@@ -78,21 +78,21 @@ double computeForces(int N, atom_t atoms[], interaction_pairs_t* p, double L, bo
                     eij = alpha*eij;
                 }
                 Usum += eij;
-                work->atomfx[c][i] += fij*dx;
-                work->atomfy[c][i] += fij*dy;
-                work->atomfz[c][i] += fij*dz;
-                work->atomfx[c][j] -= fij*dx;
-                work->atomfy[c][j] -= fij*dy;
-                work->atomfz[c][j] -= fij*dz;
+                work.atomfx[c][i] += fij*dx;
+                work.atomfy[c][i] += fij*dy;
+                work.atomfz[c][i] += fij*dz;
+                work.atomfx[c][j] -= fij*dx;
+                work.atomfy[c][j] -= fij*dy;
+                work.atomfz[c][j] -= fij*dz;
             }
         }
         /* must do reduction of c arrays by hand in openmp, at least before version 4.5 (gcc 6.1?) */
         #pragma omp for
         for (int k = 0; k < N; ++k)
-            for (int c = 0; c < work->nthreads; ++c) {
-                atoms[k].fx += work->atomfx[c][k];
-                atoms[k].fy += work->atomfy[c][k];
-                atoms[k].fz += work->atomfz[c][k];
+            for (int c = 0; c < work.nthreads; ++c) {
+                atoms[k].fx += work.atomfx[c][k];
+                atoms[k].fy += work.atomfy[c][k];
+                atoms[k].fz += work.atomfz[c][k];
             }   
     }/*end omp parallel*/
     return Usum;
