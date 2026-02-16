@@ -1,7 +1,6 @@
 #include "mpicommunication.h"
 #include <cassert>
 #include <algorithm>
-#include <ndmalloc.h>
 #include "cells.h"
 #include "debug.h"
 #include "global.h"
@@ -21,7 +20,7 @@ static double periodic(double u, double L)
 #define SEND_CELL_TO(direction) do{int so=include13(direction);if(!sys.neighborsendblock[direction]){assert_lt(blockcount[so],maxsendcells);work.blockinit[so][blockcount[so]]=sys.start_of_cell[c];work.blocklens[so][blockcount[so]]=sys.n_in_cell[c];blockcount[so]++;}}while(false)
 
 void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
-                                     atom_t* recv_buffer_atoms[],
+                                     rarray<atom_t,2>& recv_buffer_atoms,
                                      MPI_Request send_request[],
                                      MPI_Request recv_request[],
                                      int& nisends,
@@ -34,12 +33,12 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
     int maxsendcells = std::max({sys.nc[0]*sys.nc[1], sys.nc[0]*sys.nc[2], sys.nc[1]*sys.nc[2]});
     #endif
     int blockcount[SENDNUM] = {0};
-    assert(ndsize(work.blocklens,0) >= SENDNUM);
-    assert(ndsize(work.blockinit,0) >= SENDNUM);
-    assert(ndsize(work.blocklens,1) >= maxsendcells);
-    assert(ndsize(work.blockinit,1) >= maxsendcells);
-    assert(ndsize(recv_buffer_atoms,0) >= RECVNUM);
-    assert(ndsize(recv_buffer_atoms,1) >= bufmax);
+    assert(work.blocklens.extent(0) >= SENDNUM);
+    assert(work.blockinit.extent(0) >= SENDNUM);
+    assert(work.blocklens.extent(1) >= maxsendcells);
+    assert(work.blockinit.extent(1) >= maxsendcells);
+    assert(recv_buffer_atoms.extent(0) >= RECVNUM);
+    assert(recv_buffer_atoms.extent(1) >= bufmax);
     for (int c = 0; c < sys.ncprod; ++c) {
         int cx = super_cell_index_2_cx(c, sys.minc, sys.nc);
         int cy = super_cell_index_2_cy(c, sys.minc, sys.nc);
@@ -112,7 +111,7 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
                nsend += work.blocklens[sendorder][i];
             assert_le(nsend, bufmax);
             #endif
-            MPI_Type_indexed(blockcount[sendorder], work.blocklens[sendorder], work.blockinit[sendorder], MPI_ATOM, &(indexedsend[nisends]));
+            MPI_Type_indexed(blockcount[sendorder], work.blocklens.at(sendorder).data(), work.blockinit.at(sendorder).data(), MPI_ATOM, &(indexedsend[nisends]));
             MPI_Type_commit(&(indexedsend[nisends]));
             MPI_Isend(atoms.data(), 1, indexedsend[nisends], sys.neighborrank[target], sendorder, sys.comm, &(send_request[nisends]));
             nisends += 1;
@@ -125,7 +124,7 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
         int source = skip13(RECVNUM-1-recvorder);
         if (sys.neighborrank[source] != sys.rank
             && ! sys.neighborsendblock[26-source] ) { /* receive 'source' is blocked if send '26-source' is blocked */
-            MPI_Irecv(recv_buffer_atoms[nirecvs], bufmax, MPI_ATOM, sys.neighborrank[source], MPI_ANY_TAG, sys.comm, &(recv_request[nirecvs]));
+            MPI_Irecv(recv_buffer_atoms.at(nirecvs).data(), bufmax, MPI_ATOM, sys.neighborrank[source], MPI_ANY_TAG, sys.comm, &(recv_request[nirecvs]));
             nirecvs += 1;
         }
     }
@@ -135,7 +134,7 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
 
 int wait_for_particles(int num_send_requests, MPI_Request* send_requests,
                        int num_recv_requests, MPI_Request* recv_requests,
-                       atom_t* recv_buffer_atoms[], rvector<atom_t> atoms_new)
+                       rarray<atom_t,2>& recv_buffer_atoms, rvector<atom_t>& atoms_new)
 {
     MPI_Status  status[num_recv_requests+num_send_requests];
     MPI_Request all_requests[num_send_requests+num_recv_requests];
@@ -149,7 +148,7 @@ int wait_for_particles(int num_send_requests, MPI_Request* send_requests,
         int count = 0;
         MPI_Get_count(&(status[i]), MPI_ATOM, &count);
         #ifndef NDEBUG
-        size_t bufmax = ndsize(recv_buffer_atoms,1);
+        size_t bufmax = recv_buffer_atoms.extent(1);
         assert_le(count, bufmax);
         #endif
         for (int j = 0; j < count; ++j) {
@@ -170,8 +169,8 @@ int wait_for_particles(int num_send_requests, MPI_Request* send_requests,
 }
 
 void detect_and_send_exchange_particles(rvector<atom_t>& atoms, size_t bufmax,
-                                        atom_t* send_buffer_atoms[],
-                                        atom_t* recv_buffer_atoms[],
+                                        rarray<atom_t,2>& send_buffer_atoms,
+                                        rarray<atom_t,2>& recv_buffer_atoms,
                                         MPI_Request send_requests[],
                                         MPI_Request recv_requests[],
                                         int& nisends,
@@ -240,7 +239,7 @@ void detect_and_send_exchange_particles(rvector<atom_t>& atoms, size_t bufmax,
     for (int recvorder = 0; recvorder < RECVNUM; ++recvorder) {
         int source = skip13(RECVNUM-1-recvorder);
         if (sys.neighborrank[source] != sys.rank) {
-            MPI_Irecv(recv_buffer_atoms[nirecvs], bufmax, MPI_ATOM, sys.neighborrank[source], MPI_ANY_TAG, sys.comm, &(recv_requests[nirecvs]));
+            MPI_Irecv(recv_buffer_atoms.at(nirecvs).data(), bufmax, MPI_ATOM, sys.neighborrank[source], MPI_ANY_TAG, sys.comm, &(recv_requests[nirecvs]));
             nirecvs += 1;
         } else {
             /* omit recv from self */
@@ -256,18 +255,19 @@ void exchangeParticles(rvector<atom_t>& atoms, system_t& sys, parallel_work_t& w
     int          nisends = 0;
     int          nirecvs = 0;
     int bufmax = estimateMaxNCrossThroughFace(sys.rho, sys.localL, sys.T0, sys.dt, 0.5*rcp);
-    assert(ndsize(work.send_buffer_atoms,0) >= SENDNUM);
-    assert(ndsize(work.send_buffer_atoms,1) >= bufmax);
-    assert(ndsize(work.recv_buffer_atoms,0) >= RECVNUM);
-    assert(ndsize(work.recv_buffer_atoms,1) >= bufmax);
+    assert(work.send_buffer_atoms.extent(0) >= SENDNUM);
+    assert(work.send_buffer_atoms.extent(1) >= bufmax);
+    assert(work.recv_buffer_atoms.extent(0) >= RECVNUM);
+    assert(work.recv_buffer_atoms.extent(1) >= bufmax);
     detect_and_send_exchange_particles(atoms, bufmax,
                                        work.send_buffer_atoms, work.recv_buffer_atoms,
                                        send_requests, recv_requests,
                                        nisends, nirecvs, sys);
+    rvector<atom_t> exchange_particles = atoms.slice(sys.N, atoms.size());
     size_t exchange_count = wait_for_particles(nisends, send_requests,
                                                nirecvs, recv_requests,
                                                work.recv_buffer_atoms,
-                                               atoms.slice(sys.N, atoms.size()));
+                                               exchange_particles);
     sys.N += exchange_count;
 }
 
@@ -296,26 +296,26 @@ void distribute(system_t& sys)
     }
     /* sanity check */
     if (sys.np[0]*sys.np[1]*sys.np[2] != sys.nprocs) {
-        if (i_am_root) {
+        if (global_rank == global_root) {
             fprintf(stderr, "\nPARDY PARALLEL CONSISTENCY ERROR: Cannot use %d processors or each domain would be smaller than the interaction range (%d processors would work).\n\nPARDY PARALLEL PARAMETER ERROR: Reduce the number of processors!\n\n", sys.nprocs, sys.np[0]*sys.np[1]*sys.np[2]);
         }
         MPI_Abort(sys.comm, 6);
     }
     /* make a new communicator with the right topology */
-    int periods[DIM] = {1,1,1};
+    vec<int> periods {1,1,1};
     MPI_Comm newcomm;
-    MPI_Cart_create(sys.comm, DIM, sys.np, periods, true, &newcomm);
+    MPI_Cart_create(sys.comm, DIM, sys.np.data(), periods.data(), true, &newcomm);
     /* reestablish rank */
     sys.comm = newcomm;
     MPI_Comm_rank(sys.comm, &(sys.rank));
     if (sys.rank != global_rank) 
         printf("# Warning: In create_cart, rank was changed from %d to %d\n",
                global_rank, sys.rank);
-    if (i_am_root) 
+    if (global_rank == global_root) 
         printf("# (npx npy npz) = (%d %d %d)\n", sys.np[0], sys.np[1], sys.np[2]);
     /* determine neighboring domains */
-    int me[DIM];
-    MPI_Cart_coords(sys.comm, sys.rank, DIM, me);    
+    vec<int> me;
+    MPI_Cart_coords(sys.comm, sys.rank, DIM, me.data());    
     for (int d = 0; d < DIM; ++d) {
         sys.localL[d]   = sys.L/sys.np[d];
         sys.origin[d]   = -0.5*sys.L + me[d]*sys.localL[d];
@@ -331,9 +331,9 @@ void distribute(system_t& sys)
     for (int ix = -1; ix <= 1; ++ix)
         for (int iy = -1; iy <= 1; ++iy)
             for (int iz = -1; iz <= 1; ++iz) {
-                int iplace[DIM] = {me[0]+ix,me[1]+iy,me[2]+iz};
+                vec<int> iplace = {me[0]+ix,me[1]+iy,me[2]+iz};
                 MPI_Cart_rank(sys.comm,
-                              iplace,
+                              iplace.data(),
                               &(sys.neighborrank[CENTER+ix+3*iy+9*iz]));
                 bool block = false;
                 if (sys.np[0] == 1 && ix != 0)
@@ -352,8 +352,8 @@ void distribute(system_t& sys)
             }
     sys.neighborsendblock[CENTER] = true;
     sys.ncprod = sys.nc[0] * sys.nc[1] * sys.nc[2];
-    sys.start_of_cell = (int*)ndmalloc(sizeof(sys.start_of_cell[0]), 1, sys.ncprod);
-    sys.n_in_cell     = (int*)ndmalloc(sizeof(sys.n_in_cell[0]), 1, sys.ncprod);
-    if (i_am_root) 
+    sys.start_of_cell = rarray<int,1>(sys.ncprod);
+    sys.n_in_cell     = rarray<int,1>(sys.ncprod);
+    if (global_rank == global_root) 
         printf("# (ncx ncy ncz) = (%d %d %d)\n", sys.totnc[0], sys.totnc[1], sys.totnc[2]);
 }

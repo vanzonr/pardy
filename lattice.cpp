@@ -12,7 +12,7 @@ lattice_t init_lattice(double L, long long N)
             N, Lovera, 0, 0, 0, Lovera-1, Lovera-1, Lovera-1, };
 }
 
-lattice_t init_partial_lattice(double L, long long N, double origin[], double localL[])
+lattice_t init_partial_lattice(double L, long long N, const vec<double>& origin, const vec<double>& localL)
 {
  /* Initialize a lattice point generator for a part of a system of size
     LxLxL with total number of N points (with points between -L/2 and

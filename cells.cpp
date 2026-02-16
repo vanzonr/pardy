@@ -76,7 +76,7 @@ void findPairsFromOtherCells(interaction_pairs_t& p, system_t& sys,
                              int ai, int cax, int cay, int caz, int nneighbor_cells)
 {
     #define max_nneighbor_cells 26
-    const tiny_int neighbor_cell_offset[max_nneighbor_cells][DIM]
+    const vec<tiny_int> neighbor_cell_offset[max_nneighbor_cells]
         = {   { 0,  1, 0}, { 1, -1, 0}, { 1, 0, 0}, {1, 1, 0},
               {-1, -1, 1}, {-1,  0, 1}, {-1, 1, 1},
               { 0, -1, 1}, { 0,  0, 1}, { 0, 1, 1},
@@ -132,13 +132,10 @@ void findPairsFromOtherCells(interaction_pairs_t& p, system_t& sys,
         const int cb = compute_super_cell_index(cbx, cby, cbz, sys.minc, sys.nc);
         const int bjbegin = sys.start_of_cell[cb];
         const int bjend = sys.start_of_cell[cb] + sys.n_in_cell[cb];
-        int* const pairi = p.pairi + k - bjbegin;
-        int* const pairj = p.pairj + k - bjbegin;
-        packed_int* const dj = p.dj + k - bjbegin;
         for (int bj = bjbegin; bj < bjend; ++bj) {
-            pairi[bj] = ai;
-            pairj[bj] = bj;
-            dj[bj] = db;            
+            p.pairi[k-bjbegin+bj] = ai;
+            p.pairj[k-bjbegin+bj] = bj;
+            p.dj[k-bjbegin+bj] = db;            
         }
         k += bjend-bjbegin;
     }

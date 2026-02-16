@@ -71,8 +71,12 @@ bool sanity_check(system_t& sys, double rc, bool i_am_root)
 MPI_Datatype MPI_PARAMETERS = MPI_BYTE;
 
 static bool MPI_PARAMETERS_defined = false;
-static int array_of_ones[11] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-static MPI_Aint array_of_offsets[11] = {
+
+MPI_Datatype define_MPI_PARAMETERS()
+{
+    if (! MPI_PARAMETERS_defined) {
+       int array_of_ones[11] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+       MPI_Aint array_of_offsets[11] = {
                             0,
                             offsetof(system_t,Ntot),
                             offsetof(system_t,rho),
@@ -84,7 +88,7 @@ static MPI_Aint array_of_offsets[11] = {
                             offsetof(system_t,usecells),
                             offsetof(system_t,L),
                             sizeof(system_t)};
-static MPI_Datatype array_of_types[11] = {
+       MPI_Datatype array_of_types[11] = {
                             MPI_LB,
                             MPI_LONG_LONG,
                             MPI_DOUBLE,
@@ -96,10 +100,6 @@ static MPI_Datatype array_of_types[11] = {
                             MPI_C_BOOL,
                             MPI_DOUBLE,
                             MPI_UB};
-
-MPI_Datatype define_MPI_PARAMETERS()
-{
-    if (! MPI_PARAMETERS_defined) {
         MPI_Type_struct(10,
                         array_of_ones,
                         array_of_offsets,

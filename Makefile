@@ -1,8 +1,8 @@
 # Makefile using g++ for pardy.cpp
 
 CXX=mpicxx
-CXXFLAGS=-std=c++17 -fopenmp -O3 -Wall -Wfatal-errors -g -flto -march=native -ffast-math -I./ndmalloc -I./rarray
-LDFLAGS=-g -fopenmp -O3 -DNDEBUG -flto -march=native -ffast-math
+CXXFLAGS=-std=c++17 -fopenmp -O3 -Wall -Wfatal-errors -g -flto -march=native -ffast-math -I./rarray -DNDEBUG
+LDFLAGS=-g -fopenmp -O3 -flto
 LDLIBS=
 
 APPNAME=pardy

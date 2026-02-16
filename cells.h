@@ -22,7 +22,7 @@
  *
  * \result the super index
  */
-static inline int compute_super_cell_index(int x, int y, int z, int minc[], int nc[])
+static inline int compute_super_cell_index(int x, int y, int z, const vec<int>& minc, const vec<int>& nc)
 {
     return ((z-minc[2])*nc[1]+(y-minc[1]))*nc[0]+(x-minc[0]);
 }
@@ -38,7 +38,7 @@ static inline int compute_super_cell_index(int x, int y, int z, int minc[], int 
  *
  * \seealso compute_super_cell_index
  */
-static inline int super_cell_index_2_cx(int c, int minc[], int nc[])
+static inline int super_cell_index_2_cx(int c, const vec<int>& minc, const vec<int>& nc)
 {
     return (c%(nc[0]))+minc[0];
 }
@@ -54,7 +54,7 @@ static inline int super_cell_index_2_cx(int c, int minc[], int nc[])
  *
  * \see compute_super_cell_index
  */
-static inline int super_cell_index_2_cy(int c, int minc[], int nc[])
+static inline int super_cell_index_2_cy(int c, const vec<int>& minc, const vec<int>& nc)
 {
     return ((c/nc[0])%(nc[1]))+minc[1];
 }
@@ -70,7 +70,7 @@ static inline int super_cell_index_2_cy(int c, int minc[], int nc[])
  *
  * \see compute_super_cell_index
  */
-static inline int super_cell_index_2_cz(int c, int minc[], int nc[])
+static inline int super_cell_index_2_cz(int c, const vec<int>& minc, const vec<int>& nc)
 {
     return (c/(nc[0]*nc[1]))+minc[2];
 }
@@ -87,10 +87,10 @@ void cellDivide(rvector<atom_t>& atoms, system_t& sys);
  * Function to find pairs with particles in neighboring cells given a
  * cell.
  *
- * \param p a pointer to an interaction_pairs_t structure that will
+ * \param p a reference to an interaction_pairs_t structure that will
  *          hold the interaction pairs, i.e., in the indices of the
  *          pair of particles that interact.
- * \param sys a pointer to the system 
+ * \param sys a reference to the system 
  * \param ai  the index of the first particle
  * \param cax the x-cell index of the cell in which particle ai resides
  * \param cay the x-cell index of the cell in which particle ai resides
@@ -104,14 +104,14 @@ void findPairsFromOtherCells(interaction_pairs_t& p, system_t& sys,
  * Function to find pairs with particles in neighboring cells given a
  * set of ghost particles.
  *
- * \param p a pointer to an interaction_pairs_t structure that will
+ * \param p a reference to an interaction_pairs_t structure that will
  *          hold the interaction pairs, i.e., in the indices of the
  *          pair of particles that interact.
  * \param ghost_count the number of ghost particles
  * \param ghost_atoms the ghost particles
  * \param ghost_offset a number to add to the index of the ghost atoms
  *         in the ghost_atoms arrays when constructing the pair list.
- * \param sys a pointer to the system 
+ * \param sys a reference to the system 
  */
 void findGhostPairsFromCells(interaction_pairs_t& p, int ghost_count, rvector<atom_t>& ghost_atoms, int ghost_offset, system_t& sys);
 
@@ -125,10 +125,10 @@ void findGhostPairsFromCells(interaction_pairs_t& p, int ghost_count, rvector<at
  * particle j should be taken as atom[j].rx + p->djx[j]*Lx (and similar for
  * y and z). 
  *
- * \param p a pointer to an interaction_pairs_t structure that will
+ * \param p a reference to an interaction_pairs_t structure that will
  *          hold the interaction pairs, i.e., in the indices of the
  *          pair of particles that interact.
- * \param sys a pointer to the system 
+ * \param sys a reference to the system 
  */
 void findPairsFromCells(interaction_pairs_t& p, system_t& sys);
 

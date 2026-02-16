@@ -3,6 +3,8 @@
 #define SYSTEMH
 #include <mpi.h>
 #include <cstddef>
+#include "global.h"
+#include <rarray>
 
 struct system_t {
     long long Ntot;      /**< number of particles in the full domain (parameter) */
@@ -20,7 +22,7 @@ struct system_t {
     /**< for mpi domain decomposition: */
     MPI_Comm  comm;      /**< communicator (cartesian variant of COMM_WORLD) */
     int       nprocs;    /**< total number of mpi processes */
-    int       np[3];     /**< size of the 3d processes grid */
+    vec<int>  np;        /**< size of the 3d processes grid */
     int       rank;      /**< rank of this process in communicator comm */
     int       neighborrank[27]; /**< ranks of the neighbors. Entry 13 is
                             this process, 13+/-1 is the process to the
@@ -39,17 +41,17 @@ struct system_t {
                             processors in a given dimension is one, no
                             communication is needed in that
                             direction. */
-    double    localL[3]; /**< size of the local subdomain for this mpi process */
-    double    origin[3]; /**< origin of the local subdomain for this mpi process */
+    vec<double> localL;  /**< size of the local subdomain for this mpi process */
+    vec<double> origin;  /**< origin of the local subdomain for this mpi process */
     /**< for cell structure: */
-    int       totnc[3];  /**< total number of cells in the whole system */
-    int       nc[3];     /**< number of cells in the subdomain in each direction */
-    int       ncprod;    /**< product of nc[3], i.e., total number of cells in this subdomain */
-    int       minc[3];   /**< first cell index in 3 dimensions in the subdomain */
-    int       maxc[3];   /**< last cell index in 3 dimensions in the subdomain */
-    double    cellsize[3]; /**< size of the cells in each direction */
-    int*      start_of_cell; /**< position in atom[] of the first particles in each cell (1d using a super index) */
-    int*      n_in_cell; /**< number of particles in each cell (1d using a super index) (i.e., subsequent n_in_cell-1 particles are also in that cell */
+    vec<int>    totnc;   /**< total number of cells in the whole system */
+    vec<int>    nc;      /**< number of cells in the subdomain in each direction */
+    int         ncprod;  /**< product of nc[0..2], i.e., total number of cells in this subdomain */
+    vec<int>    minc;    /**< first cell index in 3 dimensions in the subdomain */
+    vec<int>    maxc;    /**< last cell index in 3 dimensions in the subdomain */
+    vec<double> cellsize;/**< size of the cells in each direction */
+    rarray<int,1> start_of_cell; /**< position in atom[] of the first particles in each cell (1d using a super index) */
+    rarray<int,1> n_in_cell; /**< number of particles in each cell (1d using a super index) (i.e., subsequent n_in_cell-1 particles are also in that cell */
 };
 
 extern MPI_Datatype MPI_PARAMETERS;

@@ -18,7 +18,7 @@
  * \result Estimate of how many particle this region will hold at
  *         most.
  */
-int estimateMaxNSelf(int Nmin, double rho, double localL[DIM]);
+int estimateMaxNSelf(int Nmin, double rho, const vec<double>& localL);
 
 /** Function to estimate how many particle this region will get from
  * an edge neighbor as ghost particles. Based on the maximal surface
@@ -34,7 +34,7 @@ int estimateMaxNSelf(int Nmin, double rho, double localL[DIM]);
  *
  * \result estimate how many particle this region will get from a face neighbor.
  */
-int estimateMaxNGhostPerFaceNeighbor(double rho, double localL[DIM], double cellsize[DIM]);
+int estimateMaxNGhostPerFaceNeighbor(double rho, const vec<double>& localL, const vec<double>& cellsize);
 
 /**
  * Function to estimate how many particle this region will get from an
@@ -48,7 +48,7 @@ int estimateMaxNGhostPerFaceNeighbor(double rho, double localL[DIM], double cell
  * initial conditions can lead to a large number of exchanged
  * particles initially.
  */
-int estimateMaxNCrossThroughFace(double rho, double localL[DIM], double T, double dt, double a);
+int estimateMaxNCrossThroughFace(double rho, const vec<double>& localL, double T, double dt, double a);
 
 /* 
  * Function to estimate how many particle this region will get from a
@@ -64,7 +64,7 @@ int estimateMaxNCrossThroughFace(double rho, double localL[DIM], double T, doubl
  *
  * \result estimate how many particle this region will get as ghost particles.
  */
-int estimateMaxNGhostPerEdgeNeighbor(double rho, double localL[DIM], double cellsize[DIM]);
+int estimateMaxNGhostPerEdgeNeighbor(double rho, const vec<double>& localL, const vec<double>& cellsize);
 
 /**
  * Function to estimate how many particle this region will get from a
@@ -80,7 +80,7 @@ int estimateMaxNGhostPerEdgeNeighbor(double rho, double localL[DIM], double cell
   * \result estimate how many particle this region will get from a face neighbor.
 
  */
-int estimateMaxNGhostPerCornerNeighbor(double rho, double cellsize[DIM]);
+int estimateMaxNGhostPerCornerNeighbor(double rho, const vec<double>& cellsize);
 
 /**
  * Estimate estimate of the maximum number of particles a given
@@ -94,7 +94,7 @@ int estimateMaxNGhostPerCornerNeighbor(double rho, double cellsize[DIM]);
   * \result estimate how many particle this region will get from a face neighbor.
 
  */
-int estimateNmax(int Nmin, double rho, double localL[DIM], double cellsize[DIM]);
+int estimateNmax(int Nmin, double rho, const vec<double>& localL, const vec<double>& cellsize);
 
 /**
  * Estimate estimate of the maximum number of interactions a given
@@ -109,6 +109,6 @@ int estimateNmax(int Nmin, double rho, double localL[DIM], double cellsize[DIM])
  * \result estimate of the maximum number of interactions a given
  *         processor will have to compute per time step.
  */
-long long estimateNpairsmax(int Nmin, double rho, double localL[DIM], double cellsize[DIM]);
+long long estimateNpairsmax(int Nmin, double rho, const vec<double>& localL, const vec<double>& cellsize);
 
 #endif

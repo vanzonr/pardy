@@ -3,7 +3,7 @@
 #include <algorithm>
 #include "global.h"
 
-int estimateMaxNSelf(int Nmin, double rho, double localL[DIM])
+int estimateMaxNSelf(int Nmin, double rho, const vec<double>& localL)
 {
  /* Function to estimate how many particle this region will hold at
     most. Based on the volume of the region and its density. Must be
@@ -15,7 +15,7 @@ int estimateMaxNSelf(int Nmin, double rho, double localL[DIM])
     return (int)(nonfluctuatingN + 2.0*sqrt(nonfluctuatingN));
 }
 
-int estimateMaxNGhostPerFaceNeighbor(double rho, double localL[DIM], double cellsize[DIM])
+int estimateMaxNGhostPerFaceNeighbor(double rho, const vec<double>& localL, const vec<double>& cellsize)
 {
  /* Function to estimate how many particle this region will get from
     an edge neighbor as ghost particles. Based on the maximal surface
@@ -30,7 +30,7 @@ int estimateMaxNGhostPerFaceNeighbor(double rho, double localL[DIM], double cell
     return (int)(nonfluctuatingN + 2.0*sqrt(nonfluctuatingN));
 }
 
-int estimateMaxNCrossThroughFace(double rho, double localL[DIM], double T, double dt, double a)
+int estimateMaxNCrossThroughFace(double rho, const vec<double>& localL, double T, double dt, double a)
 {
  /* Function to estimate how many particle this region will get from
     an edge neighbor as ghost particles. Based on the temperature, the
@@ -48,7 +48,7 @@ int estimateMaxNCrossThroughFace(double rho, double localL[DIM], double T, doubl
     return (int)(nonfluctuatingN + 8.0*sqrt(nonfluctuatingN)+5.0*sqrt(rho*localL[0]*localL[1]*localL[2]));
 }
 
-int estimateMaxNGhostPerEdgeNeighbor(double rho, double localL[DIM], double cellsize[DIM])
+int estimateMaxNGhostPerEdgeNeighbor(double rho, const vec<double>& localL, const vec<double>& cellsize)
 {
  /* Function to estimate how many particle this region will get from a
     neighbor as ghost particles. Based on the maximal length of an
@@ -63,7 +63,7 @@ int estimateMaxNGhostPerEdgeNeighbor(double rho, double localL[DIM], double cell
     return (int)(nonfluctuatingN + 2.0*sqrt(nonfluctuatingN));
 }
 
-int estimateMaxNGhostPerCornerNeighbor(double rho, double cellsize[DIM])
+int estimateMaxNGhostPerCornerNeighbor(double rho, const vec<double>& cellsize)
 {
  /* Function to estimate how many particle this region will get from a
     neighbor as ghost particles. Based on the size of a cell, and the
@@ -75,7 +75,7 @@ int estimateMaxNGhostPerCornerNeighbor(double rho, double cellsize[DIM])
     return (int)(nonfluctuatingN + 2.0*sqrt(nonfluctuatingN));
 }
 
-int estimateNmax(int Nmin, double rho, double localL[DIM], double cellsize[DIM])
+int estimateNmax(int Nmin, double rho, const vec<double>& localL, const vec<double>& cellsize)
 {
  /* Estimate estimate of the maximum number of particles a given
     processor will have to store at most (including ghost
@@ -85,7 +85,7 @@ int estimateNmax(int Nmin, double rho, double localL[DIM], double cellsize[DIM])
     return result;
 }
 
-long long estimateNpairsmax(int Nmin, double rho, double localL[DIM], double cellsize[DIM])
+long long estimateNpairsmax(int Nmin, double rho, const vec<double>& localL, const vec<double>& cellsize)
 {
  /* Estimate estimate of the maximum number of interactions a given
     processor will have to compute per time step (including with ghost

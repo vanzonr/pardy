@@ -22,9 +22,9 @@ typedef signed char packed_int;
 
 struct interaction_pairs_t {
     long long   npairs; /**< number of currently stored interaction pairs */
-    int*        pairi;  /**< current index in atoms of the first atom of each pair */
-    int*        pairj;  /**< current index in atoms of the second atom of each pair */
-    packed_int* dj;     /**< shifts in x,y, and z to apply to second
+    rvector<int> pairi;  /**< current index in atoms of the first atom of each pair */
+    rvector<int> pairj;  /**< current index in atoms of the second atom of each pair */
+    rvector<packed_int> dj;     /**< shifts in x,y, and z to apply to second
                              atom (either -1, 0, or 1); these shifts
                              accounts for periodic boundary conditions */
 };

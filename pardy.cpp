@@ -51,7 +51,6 @@
 #include <omp.h>
 #include <algorithm>
 #include <mpi.h>
-#include <ndmalloc.h>
 #include "lcg.h"
 #include "lattice.h"
 #include "debug.h"
@@ -66,18 +65,18 @@
 #include "mpicommunication.h"
 #include <rarray>
 
-void sortParticlesAndComputeForces(int &N, rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, parallel_work_t& work)
+void sortParticlesAndComputeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, parallel_work_t& work)
 {
     /* sort particles into cells */
     cellDivide(atoms, sys);
     /* send ghost particles */
-    size_t      bufmax = estimateMaxNGhostPerFaceNeighbor(sys.rho, sys.localL, sys.cellsize);
+    long long   bufmax = estimateMaxNGhostPerFaceNeighbor(sys.rho, sys.localL, sys.cellsize);
     MPI_Request send_requests[SENDNUM];
     MPI_Request recv_requests[RECVNUM];
     int         sendnum = 0;
     int         recvnum = 0;
-    assert(ndsize(work.recv_buffer_atoms,0) >= RECVNUM);
-    assert(ndsize(work.recv_buffer_atoms,1) >= bufmax);
+    assert(work.recv_buffer_atoms.extent(0) >= RECVNUM);
+    assert(work.recv_buffer_atoms.extent(1) >= bufmax);
     detect_and_send_ghost_particles(atoms, bufmax,
                                     work.recv_buffer_atoms,
                                     send_requests,
@@ -124,13 +123,13 @@ void initialize(rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, p
     MPI_Allgather(&(sys.N), 1, MPI_INT, Nall, 1, MPI_INT, MPI_COMM_WORLD);
     long long checkNtot = 0;
     for (int i = 0; i < global_size; ++i) {
-        if (i_am_root)
+        if (global_rank == global_root)
             printf("# N[%d]=%d\n", i, Nall[i]);
         checkNtot += Nall[i];
     }
     /* sanity check */
     if (checkNtot != sys.Ntot) {
-        if (i_am_root)
+        if (global_rank == global_root)
             fprintf(stderr, "\nPARDY PARALLEL CONSISTENCY ERROR: Combined number of particles in all processes (%lld) does not match parameter N (%lld)\n", checkNtot, sys.Ntot);
         MPI_Abort(sys.comm, 7);
     }
@@ -161,7 +160,7 @@ void initialize(rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, p
     MPI_Reduce(&(sys.U), &Utot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     MPI_Reduce(&(sys.K), &Ktot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     /* report results */
-    if (i_am_root) {
+    if (global_rank == global_root) {
         printf("#  step    time    E       U       K       T    <[E-<E>]^2>  walltime(s) cum.walltime(s)\n");
         printf("%7d %7.3f %7.3f %7.3f %7.3f %7.3f   .....         0.000      0.000\n",
                0, 0., (Ktot+Utot) / (sys.Ntot), Utot / (sys.Ntot), Ktot / (sys.Ntot), (2*Ktot)/(DIM*(sys.Ntot)));
@@ -234,7 +233,7 @@ void run(system_t& sys)
         double Utot, Ktot;
         MPI_Reduce(&(sys.U), &Utot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(&(sys.K), &Ktot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        if (i_am_root) {
+        if (global_rank == global_root) {
             double t = MPI_Wtime();
             printf("%7d %7.3f %7.3f %7.3f %7.3f %7.3f   .....    %10.3lf %10.3lf\n",
                    count+1, (count+1)*sys.dt, (Ktot+Utot)/sys.Ntot, Utot/sys.Ntot, Ktot/sys.Ntot, (2*Ktot)/(DIM*sys.Ntot), t-walltimelast, t-walltimestart );
@@ -247,7 +246,7 @@ void run(system_t& sys)
         double Utot, Ktot;
         MPI_Reduce(&(sys.U), &Utot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(&(sys.K), &Ktot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        if (i_am_root) {
+        if (global_rank == global_root) {
             double Etot = Ktot + Utot;
             sumE  += Etot;
             sumE2 += Etot * Etot;
@@ -267,8 +266,6 @@ void run(system_t& sys)
     }
     interaction_pairs_free(p);
     work_free(work);
-    ndfree(sys.n_in_cell);
-    ndfree(sys.start_of_cell);
 }
 
 /* program start */
@@ -287,7 +284,7 @@ int main(int argc, char* argv[])
     /* debug? */
     ENTERDEBUGGER;
     /* report parallel setup */
-    if (i_am_root) {
+    if (global_rank == global_root) {
         printf("#");
         if (global_size != 1)
             printf("Number of processes = %d, ", global_size);
@@ -298,7 +295,7 @@ int main(int argc, char* argv[])
     }
     /**/
     system_t sys;
-    if (i_am_root) {
+    if (global_rank == global_root) {
         FILE* file = ((argc>1)?fopen(argv[1],"r"):stdin);
         if (file == NULL) 
             MPI_Abort(MPI_COMM_WORLD, 1);
@@ -323,7 +320,7 @@ int main(int argc, char* argv[])
     sys.comm = MPI_COMM_WORLD;
     sys.nprocs = global_size;
     sys.rank = global_rank;
-    if (sanity_check(sys, rc, i_am_root)) {
+    if (sanity_check(sys, rc, global_rank == global_root)) {
         distribute(sys);
         run(sys);
         MPI_Finalize();

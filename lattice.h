@@ -1,6 +1,8 @@
 #ifndef LATTICEH
 #define LATTICEH
 
+#include "global.h"
+
 #define NO_LATTICE_POSITION -1
 
 struct lattice_t {
@@ -29,7 +31,7 @@ lattice_t init_lattice(double L, long long N);
    L/2). Part is defined by its origin and dimensions
    localL. Coordinates of the points will lie between origin[d] and
    origin[d]n+localL[d] in each direction d=0,1,2. */
-lattice_t init_partial_lattice(double L, long long N, double origin[], double localL[]);
+lattice_t init_partial_lattice(double L, long long N, const vec<double>& origin, const vec<double>& localL);
 
 /** Fill x, y, z with the next point of the lattice. */
 long long make_lattice_position(lattice_t& lat, double& x, double& y, double& z);

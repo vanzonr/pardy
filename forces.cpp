@@ -1,5 +1,4 @@
 #include "forces.h"
-#include <ndmalloc.h>
 #include <omp.h>
 #include <cassert>
 #include <cmath>
@@ -7,16 +6,16 @@
 void interaction_pairs_alloc(interaction_pairs_t& p, long long Npairsmax)
 {
     p.npairs = Npairsmax;
-    p.pairi  = (int*)ndmalloc(sizeof(int), 1, Npairsmax);
-    p.pairj  = (int*)ndmalloc(sizeof(int), 1, Npairsmax);
-    p.dj     = (packed_int*)ndmalloc(sizeof(packed_int), 1, Npairsmax);
+    p.pairi  = rvector<int>(Npairsmax);
+    p.pairj  = rvector<int>(Npairsmax);
+    p.dj     = rvector<packed_int>(Npairsmax);
 }
 
 void interaction_pairs_free(interaction_pairs_t& p)
 {
-    ndfree(p.pairi);
-    ndfree(p.pairj);
-    ndfree(p.dj);
+    p.pairi.clear();
+    p.pairj.clear();
+    p.dj.clear();
 }
 
 double computeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, double L, bool accum, parallel_work_t& work)
@@ -27,12 +26,12 @@ double computeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, doub
     int nth = 0;
     #pragma omp parallel reduction(max:nth)
     nth = omp_get_num_threads();    
-    assert(ndsize(work.atomfx,0) >= nth);
-    assert(ndsize(work.atomfy,0) >= nth);
-    assert(ndsize(work.atomfz,0) >= nth);
-    assert(ndsize(work.atomfx,1) >= N);
-    assert(ndsize(work.atomfy,1) >= N);
-    assert(ndsize(work.atomfz,1) >= N);
+    assert(work.atomfx.extent(0) >= nth);
+    assert(work.atomfy.extent(0) >= nth);
+    assert(work.atomfz.extent(0) >= nth);
+    assert(work.atomfx.extent(1) >= N);
+    assert(work.atomfy.extent(1) >= N);
+    assert(work.atomfz.extent(1) >= N);
     #endif
     /* initialize energy and forces to zero */
     double Usum = 0;
