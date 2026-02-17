@@ -1,7 +1,7 @@
 # Makefile using g++ for pardy.cpp
 
 CXX=mpicxx
-CXXFLAGS=-std=c++17 -fopenmp -O3 -Wall -Wfatal-errors -g -flto -march=native -ffast-math -I./rarray -DNDEBUG
+CXXFLAGS=-std=c++11 -fopenmp -O3 -Wall -Wfatal-errors -g -flto -march=native -ffast-math -I./rarray -DNDEBUG
 LDFLAGS=-g -fopenmp -O3 -flto
 LDLIBS=
 

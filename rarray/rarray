@@ -31,16 +31,22 @@
 #include <stdexcept>
 #include <memory>
 #include <cstring>
-#include <atomic>
-#include <array>
 #include <numeric>
-#include <functional>
 #include <list>
-#include <utility>
-#include <format>
 #include <cstdlib>
 #include <vector>
+#if __cplusplus >= 201103L
+#include <atomic>
+#include <array>
+#include <functional>
+#include <utility>
 #include <type_traits>
+#endif
+#if __cplusplus >= 202002L
+#if __has_include(<format>)
+#include <format>
+#endif
+#endif
 #if __cplusplus >= 201103L
 #include <cmath>
 #include <iostream>
@@ -877,16 +883,7 @@ class rarray {
     inline explicit rarray(T (&&a)[Y][Z])
     : buffer_(Y*Z, *a),
       shape_({Y, Z}, buffer_.begin())
-    {
-        if constexpr (std::is_lvalue_reference_v<decltype(a)>) {
-            std::cout << "lvalue array (automatic?)\n";
-        } else if constexpr (std::is_rvalue_reference_v<decltype(a)>) {
-            std::cout << "rvalue array (compound literal?)\n";
-            exit(1);
-        } else {
-            std::cout << "other array?\n";
-        }
-    }
+    {}
     template<std::size_t X, std::size_t Y, std::size_t Z,
              rank_type R__=R, typename=typename std::enable_if<R__ == 3>::type>
     inline explicit rarray(T (&&a)[X][Y][Z])
