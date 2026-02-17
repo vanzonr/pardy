@@ -69,45 +69,42 @@ bool sanity_check(system_t& sys, double rc, bool i_am_root)
 }
 
 MPI_Datatype MPI_PARAMETERS = MPI_BYTE;
-
 static bool MPI_PARAMETERS_defined = false;
 
 MPI_Datatype define_MPI_PARAMETERS()
 {
     if (! MPI_PARAMETERS_defined) {
-       int array_of_ones[11] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-       MPI_Aint array_of_offsets[11] = {
-                            0,
-                            offsetof(system_t,Ntot),
-                            offsetof(system_t,rho),
-                            offsetof(system_t,T0),
-                            offsetof(system_t,runtime),
-                            offsetof(system_t,dt), 
-                            offsetof(system_t,seed),
-                            offsetof(system_t,equil),
-                            offsetof(system_t,usecells),
-                            offsetof(system_t,L),
-                            sizeof(system_t)};
-       MPI_Datatype array_of_types[11] = {
-                            MPI_LB,
-                            MPI_LONG_LONG,
-                            MPI_DOUBLE,
-                            MPI_DOUBLE,
-                            MPI_DOUBLE,
-                            MPI_DOUBLE,
-                            MPI_LONG,
-                            MPI_DOUBLE,
-                            MPI_C_BOOL,
-                            MPI_DOUBLE,
-                            MPI_UB};
-        MPI_Type_struct(10,
-                        array_of_ones,
-                        array_of_offsets,
-                        array_of_types,
-                       &MPI_PARAMETERS);
+        constexpr int num_parameters = 9;
+        std::array<int,num_parameters> array_of_ones {1, 1, 1, 1, 1, 1, 1, 1, 1};
+        std::array<MPI_Aint,num_parameters> array_of_offsets {
+           offsetof(system_t, Ntot),
+           offsetof(system_t, rho),
+           offsetof(system_t, T0),
+           offsetof(system_t, runtime),
+           offsetof(system_t, dt), 
+           offsetof(system_t, seed),
+           offsetof(system_t, equil),
+           offsetof(system_t, usecells),
+           offsetof(system_t, L)};
+        std::array<MPI_Datatype,num_parameters> array_of_types {
+            MPI_LONG_LONG,
+            MPI_DOUBLE,
+            MPI_DOUBLE,
+            MPI_DOUBLE,
+            MPI_DOUBLE,
+            MPI_LONG,
+            MPI_DOUBLE,
+            MPI_C_BOOL,
+            MPI_DOUBLE};
+        MPI_Datatype MPI_PARAMETERS_INNER;
+        MPI_Type_create_struct(num_parameters,
+                               array_of_ones.data(),
+                               array_of_offsets.data(),
+                               array_of_types.data(),
+                               &MPI_PARAMETERS_INNER);
+        MPI_Type_create_resized(MPI_PARAMETERS_INNER, 0, sizeof(system_t), &MPI_PARAMETERS);
         MPI_Type_commit(&MPI_PARAMETERS);
         MPI_PARAMETERS_defined = true;
     }
     return MPI_PARAMETERS;
 }
-

@@ -7,7 +7,7 @@ LDLIBS=
 
 APPNAME=pardy
 
-OBJFILES=$(APPNAME).o lcg.o lattice.o inifile.o atom.o system.o global.o estimates.o parallelwork.o forces.o cells.o mpicommunication.o ndmalloc/ndmalloc.o
+OBJFILES=$(APPNAME).o lcg.o lattice.o inifile.o atom.o system.o global.o estimates.o parallelwork.o forces.o cells.o mpicommunication.o
 
 TESTOUTFILES=testpardy*.out
 
@@ -15,12 +15,11 @@ all: $(APPNAME)
 
 .PHONY: clean test
 
-$(APPNAME): $(APPNAME).o lcg.o lattice.o atom.o system.o inifile.o global.o estimates.o parallelwork.o forces.o cells.o mpicommunication.o ndmalloc/ndmalloc.o
+$(APPNAME): $(APPNAME).o lcg.o lattice.o atom.o system.o inifile.o global.o estimates.o parallelwork.o forces.o cells.o mpicommunication.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 $(APPNAME).o: $(APPNAME).cpp lattice.h atom.h system.h inifile.h global.h estimates.h parallelwork.h forces.h cells.h mpicommunication.h
 
-ndmalloc/ndmalloc.o: ndmalloc/ndmalloc.cpp ndmalloc/ndmalloc.h
 atom.o: atom.cpp atom.h
 cells.o: cells.cpp cells.h atom.h system.h forces.h global.h parallelwork.h debug.h
 estimates.o: estimates.cpp global.h estimates.h
@@ -64,10 +63,10 @@ test_pardy_503_nt1_np4: $(APPNAME) lj503.ini
 	OMP_NUM_THREADS=1 time -p mpirun -np 4 ./$(APPNAME) lj503.ini > testpardy503_1_4.out
 
 test_pardy_503_nt1_np5: $(APPNAME) lj503.ini
-	OMP_NUM_THREADS=1 time -p mpirun -np 5 ./$(APPNAME) lj503.ini > testpardy503_1_5.out
+	OMP_NUM_THREADS=1 time -p mpirun -np 5 --use-hwthread-cpus ./$(APPNAME) lj503.ini > testpardy503_1_5.out
 
 test_pardy_503_nt1_np8: $(APPNAME) lj503.ini
-	OMP_NUM_THREADS=1 time -p mpirun -np 8 ./$(APPNAME) lj503.ini > testpardy503_1_8.out
+	OMP_NUM_THREADS=1 time -p mpirun -np 8 --use-hwthread-cpus ./$(APPNAME) lj503.ini > testpardy503_1_8.out
 
 test_pardy_512_nt1_np1: $(APPNAME) lj512.ini
 	OMP_NUM_THREADS=1 time -p mpirun -np 1 ./$(APPNAME) lj512.ini > testpardy512_1_1.out
@@ -79,7 +78,7 @@ test_pardy_512_nt1_np4: $(APPNAME) lj512.ini
 	OMP_NUM_THREADS=1 time -p mpirun -np 4 ./$(APPNAME) lj512.ini > testpardy512_1_4.out
 
 test_pardy_512_nt1_np8: $(APPNAME) lj512.ini
-	OMP_NUM_THREADS=1 time -p mpirun -np 8 ./$(APPNAME) lj512.ini > testpardy512_1_8.out
+	OMP_NUM_THREADS=1 time -p mpirun -np 8 --use-hwthread-cpus ./$(APPNAME) lj512.ini > testpardy512_1_8.out
 
 test_pardy_32768_nt1_np1: $(APPNAME) lj32768.ini
 	OMP_NUM_THREADS=1 time -p mpirun -np 1 ./$(APPNAME) lj32768.ini > testpardy32768_1_1.out
@@ -94,10 +93,10 @@ test_pardy_32768_nt1_np4: $(APPNAME) lj32768.ini
 	OMP_NUM_THREADS=1 time -p mpirun -np 4 ./$(APPNAME) lj32768.ini > testpardy32768_1_4.out
 
 test_pardy_32768_nt1_np5: $(APPNAME) lj32768.ini
-	OMP_NUM_THREADS=1 time -p mpirun -np 5 ./$(APPNAME) lj32768.ini > testpardy32768_1_5.out
+	OMP_NUM_THREADS=1 time -p mpirun -np 5 --use-hwthread-cpus ./$(APPNAME) lj32768.ini > testpardy32768_1_5.out
 
 test_pardy_32768_nt1_np8: $(APPNAME) lj32768.ini
-	OMP_NUM_THREADS=1 time -p mpirun -np 8 ./$(APPNAME) lj32768.ini > testpardy32768_1_8.out
+	OMP_NUM_THREADS=1 time -p mpirun -np 8 --use-hwthread-cpus ./$(APPNAME) lj32768.ini > testpardy32768_1_8.out
 
 test_pardy_262144_nt2_np2: $(APPNAME) lj262144.ini
 	OMP_NUM_THREADS=2 time -p mpirun -np 2 ./$(APPNAME) lj262144.ini > testpardy262144_1_2.out

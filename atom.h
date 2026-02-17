@@ -1,6 +1,7 @@
 /* atom.h - defines the atom_t type and its mpi type */
 #ifndef ATOMH
 #define ATOMH
+
 #include <mpi.h>
 
 struct atom_t {
