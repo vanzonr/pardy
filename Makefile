@@ -13,7 +13,11 @@ TESTOUTFILES=testpardy*.out
 
 all: $(APPNAME)
 
-.PHONY: clean test
+.PHONY: all clean test doc
+
+doc:
+	doxygen
+	cd latex && make &>/dev/null
 
 $(APPNAME): $(APPNAME).o lcg.o lattice.o atom.o system.o inifile.o global.o estimates.o parallelwork.o forces.o cells.o mpicommunication.o
 	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)

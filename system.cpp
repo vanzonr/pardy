@@ -1,4 +1,11 @@
-/* system.cpp - implementation of system_t functions */
+///
+/// @file system.cpp 
+///
+/// @brief Implementation of system_t functions.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #include <cstddef>
 #include <cstdio>
 #include <mpi.h>
