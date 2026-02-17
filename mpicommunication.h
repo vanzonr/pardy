@@ -1,4 +1,11 @@
-/* mpicommunication.h */
+///
+/// @file mpicommunication.h
+///
+/// @brief TDB.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #ifndef MPICOMMUNICATIONH
 #define MPICOMMUNICATIONH
 

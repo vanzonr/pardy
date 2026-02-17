@@ -1,11 +1,11 @@
-/*
- * lcg.cpp - Implementation of a linear congruential generator with
- *           log(n) skipping. For documentation, see the header file
- *           lcg.h.
- *
- * (C) 2016 Ramses van Zon, SciNet HPC Consortium, Toronto, Canada
- */
-
+///
+/// @file lcg.cpp
+/// @brief Implementation of a linear congruential generator with log(n) skipping. 
+/// For documentation, see the header file lcg.h.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #include "lcg.h"
 #include <cassert>
 #include <cstdint>

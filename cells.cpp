@@ -1,4 +1,11 @@
-/* cells.cpp */
+///
+/// @file cells.cpp
+///
+/// @brief TDB
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #include "cells.h"
 #include "global.h"
 #include "debug.h"

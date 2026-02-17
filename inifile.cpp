@@ -1,4 +1,11 @@
-/* inifile.cpp */
+///
+/// @file inifile.cpp
+///
+/// @brief Implementation of inifile.h
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #include "inifile.h"
 #include <cstring>
 #include <cassert>

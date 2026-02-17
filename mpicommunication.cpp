@@ -1,4 +1,11 @@
-/* mpicommunication.cpp */
+///
+/// @file mpicommunication.cpp
+///
+/// @brief TDB.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #include "mpicommunication.h"
 #include <cassert>
 #include <algorithm>

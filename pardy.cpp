@@ -1,36 +1,16 @@
+///
+/// @file pardy.cpp 
+///
+/// @brief Driver code of the PARallel molecular DYnamics simulation. See README.md for usage.
+/// 
+/// @author Ramses van Zon
+/// @date 2026
+///
 /* 
- *  pardy.cpp
+ *  Version history:
  *
- *  Example of a PARallel molecular DYnamics simulation in C++, 
- *  using mpi and openmp.
- *
- *  Input (from standard input or filename given on command line): 
- *   N = <number of particles>
- *   rho = <density of the system>
- *   T = <initial temperature (standard deviation of the velocities)>
- *   runtime = <runtime>
- *   dt = <time step>
- *   seed = <random number generator seed>
- *   equil = <equilibration time>
- *   usecells
- *   (when the latter flag is not present, cells will not be used
- *   within processes)
- *
- *  Output (from standard output): lines containing:
- *   time, energy E, pot. en. U, kin. en. K, temperature T, fluctuations, walltime-per-step, walltime-overall
- *
- *  Notes:
- *  - To compile: make
- *  - To run: ./pardy input.ini
- *    where input parameters are listed in the file "input.ini", and
- *    output is sent to stdout.
- *  - Appropriate values for the equilibrium time are best found by
- *    doing a short run and seeing when the potential energy has reach
- *    a stationary value.
- *  - All reported energies values are divided by the number of particles N.
- *  - Fluctuations are the root mean square of E-<E> with <E> the mean energy E.
- *
- *  Ramses van Zon, 13 November 2008
+ *  - November 2008:
+ *    + first version, in C
  *  - In Nov 25 2009:
  *    + condensed code
  *    + OpenMP version
@@ -41,6 +21,7 @@
  *    + Added MPI
  *    + Renamed to pardy
  *    + Change input format and modularized
+ *    + converting to C++ version
  */
 
 #include <cassert>

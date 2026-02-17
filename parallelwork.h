@@ -1,4 +1,11 @@
-/* parallelwork.h */
+///
+/// @file parallelwork.h
+///
+/// @brief TODO.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #ifndef PARALLELWORKH
 #define PARALLELWORKH
 

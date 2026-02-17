@@ -1,4 +1,11 @@
-/* atom.h - defines the atom_t type and its mpi type */
+///
+/// @file atom.h
+///
+/// @brief Defines the atom_t type and its MPI type.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #ifndef ATOMH
 #define ATOMH
 

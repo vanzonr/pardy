@@ -1,4 +1,11 @@
-/* lattice.cpp */
+///
+/// @file lattice.cpp
+///
+/// @brief Implementation of lattice.h.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #include "lattice.h"
 #include <cmath>
 

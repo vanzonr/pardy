@@ -1,4 +1,11 @@
-/* atom.cpp - implements the atom_t type and its mpi type */
+///
+/// @file atom.cpp
+///
+/// @brief Implements the atom_t type and its MPI type.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #include <mpi.h>
 #include "atom.h"
 #include <array>

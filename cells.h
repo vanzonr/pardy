@@ -1,4 +1,11 @@
-/* cells.h */
+///
+/// @file cells.h
+///
+/// @brief TDB
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #ifndef CELLSH
 #define CELLSH
 

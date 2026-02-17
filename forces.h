@@ -1,4 +1,11 @@
-/* forces.h */
+///
+/// @file forces.h
+///
+/// @brief TDB
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #ifndef FORCESH
 #define FORCESH
 

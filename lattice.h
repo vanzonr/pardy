@@ -1,4 +1,11 @@
-/* lattice.h */
+///
+/// @file lattice.h
+///
+/// @brief TDB
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #ifndef LATTICEH
 #define LATTICEH
 

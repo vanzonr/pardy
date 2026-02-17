@@ -1,4 +1,11 @@
-/* global.h - a few global setting for all of pardy */
+///
+/// @file global.h
+///
+/// @brief A few global setting for all of pardy.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #ifndef GLOBALH
 #define GLOBALH
 

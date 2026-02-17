@@ -1,4 +1,11 @@
-/* system.h - defines the system_t type and its mpi type */
+///
+/// @file system.h
+///
+/// @brief Defines  a struct for system parameters and its MPI type.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #ifndef SYSTEMH
 #define SYSTEMH
 #include <mpi.h>

@@ -1,4 +1,11 @@
-/* force.cpp */
+///
+/// @file forces.cpp
+///
+/// @brief TDB
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #include "forces.h"
 #include "debug.h"
 #include <omp.h>

@@ -1,4 +1,11 @@
-/* estimates.h */
+///
+/// @file estimates.h
+///
+/// @brief TDB
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #ifndef ESTIMATESH
 #define ESTIMATESH
 

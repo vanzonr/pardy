@@ -1,4 +1,11 @@
-/* parallelwork.cpp */
+///
+/// @file parallelwork.cpp 
+///
+/// @brief TODO.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #include <omp.h>
 #include "parallelwork.h"
 

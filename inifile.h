@@ -1,38 +1,42 @@
-/* 
-   inifile.h - a small key-value table intended to hold parameters. 
-
-   The table can be read in from an 'ini file' with the functions kvt_read_name() and kvt_read().
-
-   The syntax of ini files should be as follows:
-
-    1. Basic assignment of a value to a key:
-
-         KEY = VALUE
-
-       Spaces around the equal sign are ignore, as are leading and
-       trailing spaces in KEY and VALUE.  Neither KEY nor VALUE are
-       allowed to contain spaces or hash/pound signs. Any hash/pound
-       sign ('#') in the VALUE is a comment, and only the characters
-       before the hash are used.
-
-    2. A line can contain zero, one or more KEY=VALUE assignments.  If
-       the line contains a hash, every thing from the hash on is
-       treated as a comment and is not read in.
-
-    3. Thus, a line starting with a hash is a comment and will be
-       skipped.
-
-    4. The exception to these comment-rule is that a line starting
-       with '#include ' is not a comment, but a request to include
-       another input file. The name ofthat file should follow the
-       '#include ', and may optionally be surrounded by double or
-       single quotes.
-
-   Implementation in inifile.c. Test case in inifiletest.c, to be called with testa.ini as an argument. 
-
-   Ramses van Zon, SciNet, Sept 2016
- */
-
+///
+/// @file inifile.h
+///
+/// @brief A small key-value table intended to hold parameters. 
+///
+/// The table can be read in from an 'ini file' with the functions
+/// kvt_read_name() and kvt_read().
+///
+/// The syntax of ini files should be as follows:
+///
+/// 1. Basic assignment of a value to a key:
+///
+///         KEY = VALUE
+///
+///    Spaces around the equal sign are ignore, as are leading and
+///    trailing spaces in KEY and VALUE.  Neither KEY nor VALUE are
+///    allowed to contain spaces or hash/pound signs. Any hash/pound
+///    sign ('#') in the VALUE is a comment, and only the characters
+///    before the hash are used.
+///
+/// 2. A line can contain zero, one or more KEY=VALUE assignments.  If
+///    the line contains a hash, every thing from the hash on is
+///    treated as a comment and is not read in.
+///
+/// 3. Thus, a line starting with a hash is a comment and will be
+///    skipped.
+///
+/// 4. The exception to these comment-rule is that a line starting
+///    with '#include ' is not a comment, but a request to include
+///    another input file. The name ofthat file should follow the
+///    '#include ', and may optionally be surrounded by double or
+///    single quotes.
+///
+/// Implementation in inifile.cpp. Test case in inifiletest.c, to be
+/// called with testa.ini as an argument.
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #ifndef INIFILEH
 #define INIFILEH
 

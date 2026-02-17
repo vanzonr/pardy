@@ -1,5 +1,11 @@
-/* estimates.cpp */
-
+///
+/// @file estimates.cpp
+///
+/// @brief TDB
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
 #include "estimates.h"
 #include <cmath>
 #include <algorithm>

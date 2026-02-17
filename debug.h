@@ -1,4 +1,12 @@
-/* debug.h */
+///
+/// @file debug.h
+///
+/// @brief TDB
+///
+/// @author Ramses van Zon
+/// @date 2026
+///
+
 #ifndef DEBUG_H
 #define DEBUG_H
 
