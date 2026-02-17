@@ -1,4 +1,4 @@
-/* a few global setting for all of pardy */
+/* global.h - a few global setting for all of pardy */
 #ifndef GLOBALH
 #define GLOBALH
 

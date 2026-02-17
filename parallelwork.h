@@ -1,3 +1,4 @@
+/* parallelwork.h */
 #ifndef PARALLELWORKH
 #define PARALLELWORKH
 

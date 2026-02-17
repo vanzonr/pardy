@@ -1,3 +1,4 @@
+/* parallelwork.cpp */
 #include <omp.h>
 #include "parallelwork.h"
 

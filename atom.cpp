@@ -1,4 +1,4 @@
-/* atom.c - implements the atom_t type and its mpi type */
+/* atom.cpp - implements the atom_t type and its mpi type */
 #include <mpi.h>
 #include "atom.h"
 #include <array>

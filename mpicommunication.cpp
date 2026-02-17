@@ -1,3 +1,4 @@
+/* mpicommunication.cpp */
 #include "mpicommunication.h"
 #include <cassert>
 #include <algorithm>
@@ -33,12 +34,12 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
     int maxsendcells = std::max({sys.nc[0]*sys.nc[1], sys.nc[0]*sys.nc[2], sys.nc[1]*sys.nc[2]});
     #endif
     int blockcount[SENDNUM] = {0};
-    assert(work.blocklens.extent(0) >= SENDNUM);
-    assert(work.blockinit.extent(0) >= SENDNUM);
-    assert(work.blocklens.extent(1) >= maxsendcells);
-    assert(work.blockinit.extent(1) >= maxsendcells);
-    assert(recv_buffer_atoms.extent(0) >= RECVNUM);
-    assert(recv_buffer_atoms.extent(1) >= bufmax);
+    assert_ge(work.blocklens.extent(0), SENDNUM);
+    assert_ge(work.blockinit.extent(0), SENDNUM);
+    assert_ge(work.blocklens.extent(1), maxsendcells);
+    assert_ge(work.blockinit.extent(1), maxsendcells);
+    assert_ge(recv_buffer_atoms.extent(0), RECVNUM);
+    assert_ge(recv_buffer_atoms.extent(1), bufmax);
     for (int c = 0; c < sys.ncprod; ++c) {
         int cx = super_cell_index_2_cx(c, sys.minc, sys.nc);
         int cy = super_cell_index_2_cy(c, sys.minc, sys.nc);
@@ -116,7 +117,7 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
             MPI_Isend(atoms.data(), 1, indexedsend[nisends], sys.neighborrank[target], sendorder, sys.comm, &(send_request[nisends]));
             nisends += 1;
         } else 
-            assert(blockcount[sendorder] == 0);
+            assert_eq(blockcount[sendorder],0);
     }
     /* also setup receives */
     nirecvs = 0;
@@ -231,7 +232,7 @@ void detect_and_send_exchange_particles(rvector<atom_t>& atoms, size_t bufmax,
             nisends += 1;
         } else {
             /* omit sends to self */
-            assert(bufcount[sendorder] == 0); /* check that the program wasn't going to send anything anyway. */
+            assert_eq(bufcount[sendorder],0); /* check that the program wasn't going to send anything anyway. */
         }
     }
     /* also setup receives */
@@ -255,10 +256,10 @@ void exchangeParticles(rvector<atom_t>& atoms, system_t& sys, parallel_work_t& w
     int          nisends = 0;
     int          nirecvs = 0;
     int bufmax = estimateMaxNCrossThroughFace(sys.rho, sys.localL, sys.T0, sys.dt, 0.5*rcp);
-    assert(work.send_buffer_atoms.extent(0) >= SENDNUM);
-    assert(work.send_buffer_atoms.extent(1) >= bufmax);
-    assert(work.recv_buffer_atoms.extent(0) >= RECVNUM);
-    assert(work.recv_buffer_atoms.extent(1) >= bufmax);
+    assert_ge(work.send_buffer_atoms.extent(0), SENDNUM);
+    assert_ge(work.send_buffer_atoms.extent(1), bufmax);
+    assert_ge(work.recv_buffer_atoms.extent(0), RECVNUM);
+    assert_ge(work.recv_buffer_atoms.extent(1), bufmax);
     detect_and_send_exchange_particles(atoms, bufmax,
                                        work.send_buffer_atoms, work.recv_buffer_atoms,
                                        send_requests, recv_requests,

@@ -1,3 +1,4 @@
+/* mpicommunication.h */
 #ifndef MPICOMMUNICATIONH
 #define MPICOMMUNICATIONH
 

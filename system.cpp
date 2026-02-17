@@ -1,4 +1,4 @@
-/* system.h - defines the system_t type and its mpi type */
+/* system.cpp - implementation of system_t functions */
 #include <cstddef>
 #include <cstdio>
 #include <mpi.h>
@@ -12,7 +12,7 @@ bool sanity_check(system_t& sys, double rc, bool i_am_root)
     if (sys.Ntot <= 0) {
         if (i_am_root) 
             fprintf(stderr,
-                    "\nLJHPC PARAMETER ERROR: Incorrect number of particles (N=%d). "
+                    "\nPARDY PARAMETER ERROR: Incorrect number of particles (N=%d). "
                     "N must be positive\n",
                     sys.N);
         sane = false;
@@ -20,7 +20,7 @@ bool sanity_check(system_t& sys, double rc, bool i_am_root)
     if (sys.rho <= 0.0) {
         if (i_am_root) 
             fprintf(stderr,
-                    "\nLJHPC PARAMETER ERROR: Incorrect density (rho=%f). "
+                    "\nPARDY PARAMETER ERROR: Incorrect density (rho=%f). "
                     "rho must be positive\n",
                     sys.rho);
         sane = false;
@@ -28,7 +28,7 @@ bool sanity_check(system_t& sys, double rc, bool i_am_root)
     if (sys.L < 2*rc) {
         if (i_am_root) 
             fprintf(stderr,
-                    "\nLJHPC PARAMETER ERROR: Incorrect linear system size (L=%f). "
+                    "\nPARDY PARAMETER ERROR: Incorrect linear system size (L=%f). "
                     "L must be at least two times the interaction range (rc=%f)\n",
                     sys.L, rc);
         sane = false;
@@ -36,7 +36,7 @@ bool sanity_check(system_t& sys, double rc, bool i_am_root)
     if (sys.dt <= 0.0) {
         if (i_am_root) 
             fprintf(stderr,
-                    "\nLJHPC PARAMETER ERROR: Incorrect time step (dt=%f). "
+                    "\nPARDY PARAMETER ERROR: Incorrect time step (dt=%f). "
                     "dt must be positive\n",
                     sys.dt);
         sane = false;
@@ -44,7 +44,7 @@ bool sanity_check(system_t& sys, double rc, bool i_am_root)
     if (sys.runtime <= 0.0) {
         if (i_am_root) 
             fprintf(stderr,
-                    "\nLJHPC PARAMETER ERROR: Incorrect runtime (runtime=%f). "
+                    "\nPARDY PARAMETER ERROR: Incorrect runtime (runtime=%f). "
                     "runtime must be positive\n",
                     sys.runtime);
         sane = false;
@@ -52,7 +52,7 @@ bool sanity_check(system_t& sys, double rc, bool i_am_root)
     if (sys.seed == 0) {
         if (i_am_root) 
             fprintf(stderr,
-                    "\nLJHPC PARAMETER ERROR: Incorrect random number seed (seed=%ld). "
+                    "\nPARDY PARAMETER ERROR: Incorrect random number seed (seed=%ld). "
                     "seed must not be zero\n",
                     sys.seed);
         sane = false;
@@ -60,7 +60,7 @@ bool sanity_check(system_t& sys, double rc, bool i_am_root)
     if  (sys.equil > sys.runtime) {
         if (i_am_root) 
             fprintf(stderr,
-                    "\nLJHPC PARAMETER ERROR: Incorrect equilibration time (equil=%f). "
+                    "\nPARDY PARAMETER ERROR: Incorrect equilibration time (equil=%f). "
                     "equil must be less then the runtime (%f)\n",
                     sys.equil, sys.runtime);
         sane = false;

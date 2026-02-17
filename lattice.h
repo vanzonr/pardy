@@ -1,3 +1,4 @@
+/* lattice.h */
 #ifndef LATTICEH
 #define LATTICEH
 

@@ -1,8 +1,8 @@
 /* 
- *  pardy.c
+ *  pardy.cpp
  *
- *  Example of a PARallel molecular DYnamics simulation in C, using
- *  mpi and openmp.
+ *  Example of a PARallel molecular DYnamics simulation in C++, 
+ *  using mpi and openmp.
  *
  *  Input (from standard input or filename given on command line): 
  *   N = <number of particles>
@@ -75,8 +75,8 @@ void sortParticlesAndComputeForces(int N, rvector<atom_t>& atoms, interaction_pa
     MPI_Request recv_requests[RECVNUM];
     int         sendnum = 0;
     int         recvnum = 0;
-    assert(work.recv_buffer_atoms.extent(0) >= RECVNUM);
-    assert(work.recv_buffer_atoms.extent(1) >= bufmax);
+    assert_ge(work.recv_buffer_atoms.extent(0), RECVNUM);
+    assert_ge(work.recv_buffer_atoms.extent(1), bufmax);
     detect_and_send_ghost_particles(atoms, bufmax,
                                     work.recv_buffer_atoms,
                                     send_requests,

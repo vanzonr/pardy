@@ -1,4 +1,6 @@
+/* force.cpp */
 #include "forces.h"
+#include "debug.h"
 #include <omp.h>
 #include <cassert>
 #include <cmath>
@@ -26,12 +28,12 @@ double computeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, doub
     int nth = 0;
     #pragma omp parallel reduction(max:nth)
     nth = omp_get_num_threads();    
-    assert(work.atomfx.extent(0) >= nth);
-    assert(work.atomfy.extent(0) >= nth);
-    assert(work.atomfz.extent(0) >= nth);
-    assert(work.atomfx.extent(1) >= N);
-    assert(work.atomfy.extent(1) >= N);
-    assert(work.atomfz.extent(1) >= N);
+    assert_ge(work.atomfx.extent(0), nth);
+    assert_ge(work.atomfy.extent(0), nth);
+    assert_ge(work.atomfz.extent(0), nth);
+    assert_ge(work.atomfx.extent(1), N);
+    assert_ge(work.atomfy.extent(1), N);
+    assert_ge(work.atomfz.extent(1), N);
     #endif
     /* initialize energy and forces to zero */
     double Usum = 0;
@@ -44,10 +46,10 @@ double computeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, doub
     #pragma omp parallel reduction(+:Usum)
     {
         int c = omp_get_thread_num();
-        for (size_t k = 0; k < N; ++k)
+        for (long long k = 0; k < N; ++k)
             work.atomfx[c][k] = work.atomfy[c][k] = work.atomfz[c][k] = 0.0;
         #pragma omp for 
-        for (size_t k = 0; k < p.npairs; ++k) {
+        for (long long k = 0; k < p.npairs; ++k) {
             int i = p.pairi[k];
             int j = p.pairj[k];
             int d = p.dj[k];

@@ -1,3 +1,4 @@
+/* lattice.cpp */
 #include "lattice.h"
 #include <cmath>
 

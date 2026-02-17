@@ -1,3 +1,4 @@
+/* inifile.cpp */
 #include "inifile.h"
 #include <cstring>
 #include <cassert>

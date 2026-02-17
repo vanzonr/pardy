@@ -1,3 +1,4 @@
+/* debug.h */
 #ifndef DEBUG_H
 #define DEBUG_H
 
@@ -37,12 +38,12 @@
 
 /* specialize asserts */
 
-#define assert_eq(a,b) if(!((a)==(b))){std::cerr << #a << ':' << (a) << ' ' << #b << ':' << (b) << '@' << global_rank << std::endl;assert((a)==(b));}
-#define assert_neq(a,b) if(!((a)!=(b))){std::cerr << #a << ':' << (a) << ' ' << #b << ':' << (b) << '@' << global_rank << std::endl;assert((a)!=(b));}
-#define assert_lt(a,b) if(!((a)<(b))){std::cerr << #a << ':' << (a) << ' ' << #b << ':' << (b) << '@' << global_rank << std::endl;assert((a)<(b));}
-#define assert_le(a,b) if(!((a)<=(b))){std::cerr << #a << ':' << (a) << ' ' << #b << ':' << (b) << '@' << global_rank << std::endl;assert((a)<=(b));}
-#define assert_gt(a,b) if(!((a)>(b))){std::cerr << #a << ':' << (a) << ' ' << #b << ':' << (b) << '@' << global_rank << std::endl;assert((a)>(b));}
-#define assert_ge(a,b) if(!((a)>=(b))){std::cerr << #a << ':' << (a) << ' ' << #b << ':' << (b) << '@' << global_rank << std::endl;assert((a)>=(b));}
+#define assert_eq(a,b) if(!((long long)(a)==(long long)(b))){std::cerr << #a << ':' << (long long)(a) << ' ' << #b << ':' << (long long)(b) << '@' << global_rank << std::endl;assert((long long)(a)==(long long)(b));}
+#define assert_neq(a,b) if(!((long long)(a)!=(long long)(b))){std::cerr << #a << ':' << (long long)(a) << ' ' << #b << ':' << (long long)(b) << '@' << global_rank << std::endl;assert((long long)(a)!=(long long)(b));}
+#define assert_lt(a,b) if(!((long long)(a)<(long long)(b))){std::cerr << #a << ':' << (long long)(a) << ' ' << #b << ':' << (long long)(b) << '@' << global_rank << std::endl;assert((long long)(a)<(long long)(b));}
+#define assert_le(a,b) if(!((long long)(a)<=(long long)(b))){std::cerr << #a << ':' << (long long)(a) << ' ' << #b << ':' << (long long)(b) << '@' << global_rank << std::endl;assert((long long)(a)<=(long long)(b));}
+#define assert_gt(a,b) if(!((long long)(a)>(long long)(b))){std::cerr << #a << ':' << (long long)(a) << ' ' << #b << ':' << (long long)(b) << '@' << global_rank << std::endl;assert((long long)(a)>(long long)(b));}
+#define assert_ge(a,b) if(!((long long)(a)>=(long long)(b))){std::cerr << #a << ':' << (long long)(a) << ' ' << #b << ':' << (long long)(b) << '@' << global_rank << std::endl;assert((long long)(a)>=(long long)(b));}
 
 #else
 
