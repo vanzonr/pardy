@@ -13,8 +13,7 @@
 
 bool sanity_check(system_t& sys, double rc, bool i_am_root)
 {
-    /* make sure the system definition makes sense physically and
-       computationally. */
+    // make sure the system definition makes sense physically and computationally.
     bool sane = true;
     if (sys.Ntot <= 0) {
         if (i_am_root) 

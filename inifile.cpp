@@ -103,7 +103,7 @@ static char* process_keyval_inputline(char** key, char** value)
         *value = empty;
     }
     TRIMWHITESPACE(key);
-    /* treat trailing # as comments */
+    // treat trailing # as comments
     char* hash = strchr(*value, '#');
     if (hash) *hash='\0';
     TRIMWHITESPACE(value);
@@ -128,13 +128,13 @@ static void kvt_read_knowingly(key_value_table_t& table, FILE* f, const char* op
         if (key) {
             TRIMWHITESPACE(&key);
             if (key[0] == '#') {
-                /* interpret the next word as a command followed by an argument string */
-                /* skip pound sign and immediately following white space */
+                // interpret the next word as a command followed by an argument string
+                // skip pound sign and immediately following white space
                 char* command = key+1;
                 char* args = NULL;
                 while (command && ( command[0] == ' ' || command[0] == '\t' ) )
                     command++;
-                /* next white space or tab is delimiter */
+                // next white space or tab is delimiter
                 char* space = strchr(command, ' ');
                 if (!space) space = strchr(key, '\t');
                 if (space) {
@@ -144,7 +144,7 @@ static void kvt_read_knowingly(key_value_table_t& table, FILE* f, const char* op
                     args = empty;
                 }
                 TRIMWHITESPACE(&args);
-                /* trim surrounding quotes */
+                // trim surrounding quotes 
                 TRIMQUOTES(&args);
                 if (strcmp(command,"include")==0) {
                     if (openfiles && strcmp(args,openfiles)==0)

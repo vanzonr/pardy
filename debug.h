@@ -44,7 +44,7 @@
 
 #ifndef NDEBUG
 
-/* specialize asserts */
+// specialized asserts 
 
 #define assert_eq(a,b) if(!((long long)(a)==(long long)(b))){std::cerr << #a << ':' << (long long)(a) << ' ' << #b << ':' << (long long)(b) << '@' << global_rank << std::endl;assert((long long)(a)==(long long)(b));}
 #define assert_neq(a,b) if(!((long long)(a)!=(long long)(b))){std::cerr << #a << ':' << (long long)(a) << ' ' << #b << ':' << (long long)(b) << '@' << global_rank << std::endl;assert((long long)(a)!=(long long)(b));}

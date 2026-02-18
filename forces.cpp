@@ -28,8 +28,8 @@ void interaction_pairs_free(interaction_pairs_t& p)
 }
 
 double computeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, double L, bool accum, parallel_work_t& work)
-/* accum: true if the forces need to be added too, false if the forces should be replaced 
-   returns the potential enenty.*/
+// accum: true if the forces need to be added too, false if the forces
+// should be replaced returns the potential enengy
 {
     #ifndef NDEBUG
     int nth = 0;
@@ -42,14 +42,14 @@ double computeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, doub
     assert_ge(work.atomfy.extent(1), N);
     assert_ge(work.atomfz.extent(1), N);
     #endif
-    /* initialize energy and forces to zero */
+    // initialize energy and forces to zero 
     double Usum = 0;
     if (!accum) {
         #pragma omp parallel for default(none) shared(N,atoms)
         for (int i = 0; i < N; ++i) 
             atoms[i].fx = atoms[i].fy = atoms[i].fz = 0.0;
     } 
-    /* determine interactions */
+    // determine interactions
     #pragma omp parallel reduction(+:Usum)
     {
         int c = omp_get_thread_num();
@@ -60,7 +60,7 @@ double computeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, doub
             int i = p.pairi[k];
             int j = p.pairj[k];
             int d = p.dj[k];
-            /* determine distance in periodic geometry */
+            // determine distance in periodic geometry
             double dx = atoms[i].rx - atoms[j].rx - L*pack2x(d);
             double dy = atoms[i].ry - atoms[j].ry - L*pack2y(d); 
             double dz = atoms[i].rz - atoms[j].rz - L*pack2z(d);
@@ -68,16 +68,16 @@ double computeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, doub
             if (r2 < rc*rc) {
                 double r2i = 1/r2;
                 double r6i = r2i*r2i*r2i;
-                double fij = 48*r2i*r6i*(r6i-0.5); /* force multiplier */
-                double eij = 4*r6i*(r6i-1); /* potential energy between i and j */
-                /* within smooth cutoff region? */
+                double fij = 48*r2i*r6i*(r6i-0.5); // force multiplier 
+                double eij = 4*r6i*(r6i-1); // potential energy between i and j
+                // within smooth cutoff region? 
                 if (r2 > rcp*rcp) {
-                    /* in out part of potential, between rcp and rc,      */
-                    /* replace phi by alpha * phi for smoother potential  */
-                    /* based on a slight rewriting of the alpha factor to */
-                    /*  alpha=1/2-1/4x(x^2-3)                             */
-                    /* where                                              */
-                    /*  x=(2r-rcp-rc)/(rcp-rc)                            */          
+                    // in out part of potential, between rcp and rc,
+                    // replace phi by alpha * phi for smoother potential
+                    // based on a slight rewriting of the alpha factor to 
+                    //  alpha=1/2-1/4x(x^2-3)
+                    // where                  
+                    //  x=(2r-rcp-rc)/(rcp-rc)
                     double r = sqrt(r2);
                     double x = (2*r-rcp-rc)/(rcp-rc);
                     double alpha  = 0.5-0.25*x*(x*x-3);
@@ -94,7 +94,7 @@ double computeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, doub
                 work.atomfz[c][j] -= fij*dz;
             }
         }
-        /* must do reduction of c arrays by hand in openmp, at least before version 4.5 (gcc 6.1?) */
+        // must do reduction of c arrays by hand in openmp, at least before version 4.5 (gcc 6.1?) 
         #pragma omp for
         for (int k = 0; k < N; ++k)
             for (int c = 0; c < work.nthreads; ++c) {
@@ -102,6 +102,6 @@ double computeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, doub
                 atoms[k].fy += work.atomfy[c][k];
                 atoms[k].fz += work.atomfz[c][k];
             }   
-    }/*end omp parallel*/
+    }// end omp parallel
     return Usum;
 }

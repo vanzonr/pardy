@@ -36,7 +36,7 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
                                      system_t& sys,
                                      parallel_work_t& work)
 {
-    /* build index lists */
+    // build index lists 
     #ifndef NDEBUG
     int maxsendcells = std::max({sys.nc[0]*sys.nc[1], sys.nc[0]*sys.nc[2], sys.nc[1]*sys.nc[2]});
     #endif
@@ -51,7 +51,7 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
         int cx = super_cell_index_2_cx(c, sys.minc, sys.nc);
         int cy = super_cell_index_2_cy(c, sys.minc, sys.nc);
         int cz = super_cell_index_2_cz(c, sys.minc, sys.nc);
-        /* send corner cells: */
+        // send corner cells:
         if (cx == sys.minc[0] && cy == sys.minc[1] && cz == sys.minc[2]) 
             SEND_CELL_TO(BACKBOTTOMLEFT);
         if (cx == sys.maxc[0] && cy == sys.minc[1] && cz == sys.minc[2])
@@ -68,7 +68,7 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
             SEND_CELL_TO(BACKTOPRIGHT);
         if (cx == sys.maxc[0] && cy == sys.maxc[1] && cz == sys.maxc[2])
             SEND_CELL_TO(FRONTTOPRIGHT);
-        /* send edge cells: */
+        // send edge cells: 
         if (cy == sys.minc[1] && cz == sys.minc[2])
             SEND_CELL_TO(LEFTBOTTOM);
         if (cy == sys.maxc[1] && cz == sys.minc[2])
@@ -93,7 +93,7 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
             SEND_CELL_TO(BACKRIGHT);
         if (cx == sys.maxc[0] && cy == sys.maxc[1])
             SEND_CELL_TO(FRONTRIGHT);
-        /* send face cells: */
+        // send face cells:
         if (cx == sys.minc[0])
             SEND_CELL_TO(BACK);
         if (cx == sys.maxc[0])
@@ -107,7 +107,7 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
         if (cz == sys.maxc[2])
             SEND_CELL_TO(TOP);
     }
-    /* use these to send using mpi_datatype */
+    // use these to send using mpi_datatype
     MPI_Datatype indexedsend[SENDNUM];
     nisends = 0;    
     for (int sendorder = 0; sendorder < SENDNUM; ++sendorder) {
@@ -126,12 +126,12 @@ void detect_and_send_ghost_particles(rvector<atom_t>& atoms, size_t bufmax,
         } else 
             assert_eq(blockcount[sendorder],0);
     }
-    /* also setup receives */
+    // also setup receives 
     nirecvs = 0;
     for (int recvorder = 0; recvorder < RECVNUM; ++recvorder) {
         int source = skip13(RECVNUM-1-recvorder);
         if (sys.neighborrank[source] != sys.rank
-            && ! sys.neighborsendblock[26-source] ) { /* receive 'source' is blocked if send '26-source' is blocked */
+            && ! sys.neighborsendblock[26-source] ) { // receive 'source' is blocked if send '26-source' is blocked 
             MPI_Irecv(recv_buffer_atoms.at(nirecvs).data(), bufmax, MPI_ATOM, sys.neighborrank[source], MPI_ANY_TAG, sys.comm, &(recv_request[nirecvs]));
             nirecvs += 1;
         }
@@ -209,13 +209,13 @@ void detect_and_send_exchange_particles(rvector<atom_t>& atoms, size_t bufmax,
             else if (atoms[i].rz >= sys.origin[2] + sys.localL[2])
                 iz = +1;
         }
-        atoms[i].c = CENTER+ix+3*iy+9*iz; /* temporarily reuse c for new proc where to send */
-        /* apply periodic boundary conditions: */
+        atoms[i].c = CENTER+ix+3*iy+9*iz; // temporarily reuse c for new proc where to send
+        // apply periodic boundary conditions:
         atoms[i].rx = periodic(atoms[i].rx, sys.L);
         atoms[i].ry = periodic(atoms[i].ry, sys.L);
         atoms[i].rz = periodic(atoms[i].rz, sys.L);
     }
-    /* take out atoms */
+    // take out atoms 
     for (int i = 0; i < sys.N; ++i) 
         while (atoms[i].c != CENTER && i < sys.N) {
             int sendorder = include13(atoms[i].c);
@@ -230,7 +230,7 @@ void detect_and_send_exchange_particles(rvector<atom_t>& atoms, size_t bufmax,
         assert_lt(thisbufcount, bufmax);
     }
     #endif
-    /* setup sends */
+    // setup sends 
     nisends = 0;
     for (int sendorder = 0; sendorder < SENDNUM; ++sendorder) {
         int target = skip13(sendorder);
@@ -238,11 +238,11 @@ void detect_and_send_exchange_particles(rvector<atom_t>& atoms, size_t bufmax,
             MPI_Isend(&(send_buffer_atoms[sendorder][0]), bufcount[sendorder], MPI_ATOM, sys.neighborrank[target], sendorder, sys.comm, &(send_requests[nisends]));
             nisends += 1;
         } else {
-            /* omit sends to self */
-            assert_eq(bufcount[sendorder],0); /* check that the program wasn't going to send anything anyway. */
+            // omit sends to self
+            assert_eq(bufcount[sendorder],0); // check that the program wasn't going to send anything anyway. 
         }
     }
-    /* also setup receives */
+    // also setup receives 
     nirecvs = 0;
     for (int recvorder = 0; recvorder < RECVNUM; ++recvorder) {
         int source = skip13(RECVNUM-1-recvorder);
@@ -250,7 +250,7 @@ void detect_and_send_exchange_particles(rvector<atom_t>& atoms, size_t bufmax,
             MPI_Irecv(recv_buffer_atoms.at(nirecvs).data(), bufmax, MPI_ATOM, sys.neighborrank[source], MPI_ANY_TAG, sys.comm, &(recv_requests[nirecvs]));
             nirecvs += 1;
         } else {
-            /* omit recv from self */
+            // omit recv from self 
             send_requests[recvorder] = MPI_REQUEST_NULL;
         }
     }
@@ -279,15 +279,15 @@ void exchangeParticles(rvector<atom_t>& atoms, system_t& sys, parallel_work_t& w
     sys.N += exchange_count;
 }
 
-/* integration and measurement */
+// integration and measurement 
 void distribute(system_t& sys)
 {
-    /* divide processors first */
+    // divide processors first 
     int npmax = (int)(sys.L/rc);
     float FnpUse = 0;
     float z = 1.0f/(npmax*npmax+npmax*npmax+npmax*npmax);
-    /* brute force way of getting the most uniform 3d distribution for
-       processor topology */
+    // brute force way of getting the most uniform 3d distribution for
+    // processor topology
     for (int iz = 1; iz <= npmax; ++iz) {       
         for (int iy = 1; iy <= npmax; ++iy) {
             for (int ix = 1; ix <= npmax; ++ix) {
@@ -302,18 +302,18 @@ void distribute(system_t& sys)
             }
         }
     }
-    /* sanity check */
+    // sanity check
     if (sys.np[0]*sys.np[1]*sys.np[2] != sys.nprocs) {
         if (global_rank == global_root) {
             fprintf(stderr, "\nPARDY PARALLEL CONSISTENCY ERROR: Cannot use %d processors or each domain would be smaller than the interaction range (%d processors would work).\n\nPARDY PARALLEL PARAMETER ERROR: Reduce the number of processors!\n\n", sys.nprocs, sys.np[0]*sys.np[1]*sys.np[2]);
         }
         MPI_Abort(sys.comm, 6);
     }
-    /* make a new communicator with the right topology */
+    // make a new communicator with the right topology 
     vec<int> periods {1,1,1};
     MPI_Comm newcomm;
     MPI_Cart_create(sys.comm, DIM, sys.np.data(), periods.data(), true, &newcomm);
-    /* reestablish rank */
+    // reestablish rank 
     sys.comm = newcomm;
     MPI_Comm_rank(sys.comm, &(sys.rank));
     if (sys.rank != global_rank) 
@@ -321,7 +321,7 @@ void distribute(system_t& sys)
                global_rank, sys.rank);
     if (global_rank == global_root) 
         printf("# (npx npy npz) = (%d %d %d)\n", sys.np[0], sys.np[1], sys.np[2]);
-    /* determine neighboring domains */
+    // determine neighboring domains 
     vec<int> me;
     MPI_Cart_coords(sys.comm, sys.rank, DIM, me.data());    
     for (int d = 0; d < DIM; ++d) {

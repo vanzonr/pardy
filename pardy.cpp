@@ -6,24 +6,6 @@
 /// @author Ramses van Zon
 /// @date 2026
 ///
-/* 
- *  Version history:
- *
- *  - November 2008:
- *    + first version, in C
- *  - In Nov 25 2009:
- *    + condensed code
- *    + OpenMP version
- *  - In Aug 2016:
- *    + Renamed to ljhpc, included mpi header (not used yet)
- *  - In Sep 2016:
- *    + Added cells to determine interacting pairs.
- *    + Added MPI
- *    + Renamed to pardy
- *    + Change input format and modularized
- *    + converting to C++ version
- */
-
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
@@ -48,9 +30,9 @@
 
 void sortParticlesAndComputeForces(int N, rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, parallel_work_t& work)
 {
-    /* sort particles into cells */
+    // sort particles into cells 
     cellDivide(atoms, sys);
-    /* send ghost particles */
+    // send ghost particles
     long long   bufmax = estimateMaxNGhostPerFaceNeighbor(sys.rho, sys.localL, sys.cellsize);
     MPI_Request send_requests[SENDNUM];
     MPI_Request recv_requests[RECVNUM];
@@ -64,11 +46,11 @@ void sortParticlesAndComputeForces(int N, rvector<atom_t>& atoms, interaction_pa
                                     recv_requests,
                                     sendnum, recvnum,
                                     sys, work);
-    /* Part of the force calculation involving local particles
-       (computation overlaps with communication) */
+    // Part of the force calculation involving local particles
+    // (computation overlaps with communication) 
     findPairsFromCells(p, sys);
     sys.U = computeForces(N, atoms, p, sys.L, false, work);
-    /* Collect neighbors */
+    // Collect neighbors 
     rvector<atom_t> ghost_atoms = atoms.slice(N, atoms.size());
     size_t  ghost_count = wait_for_particles(sendnum, send_requests,
                                              recvnum, recv_requests,
@@ -78,7 +60,7 @@ void sortParticlesAndComputeForces(int N, rvector<atom_t>& atoms, interaction_pa
     size_t atomsCapacity = atoms.size();
     assert_le(NselfPlusGhosts, atomsCapacity);
     #endif
-    /* Neighbor part of force calculation */
+    // Neighbor part of force calculation 
     findGhostPairsFromCells(p, ghost_count, ghost_atoms, N, sys);
     sys.U += 0.5*computeForces(NselfPlusGhosts, atoms, p, sys.L, true, work);
 }
@@ -87,19 +69,19 @@ void initialize(rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, p
 {
     double scale;
     int i;
-    /* generate positions */
-    /* initialize lattice position generator, then pick at most Ntot (will be less if parallel) */
+    // generate positions 
+    // initialize lattice position generator, then pick at most Ntot (will be less if parallel)
     lattice_t lat = init_partial_lattice(sys.L, sys.Ntot, sys.origin, sys.localL);
     for (i = 0; i < sys.Ntot; ++i) {
         long long index = make_lattice_position(lat, atoms[i].rx, atoms[i].ry, atoms[i].rz);
         if (index != NO_LATTICE_POSITION) {
             atoms[i].index = index;
         } else {
-            break; /* no more points */
+            break; // no more points
         }
     }
     sys.N = i;
-    /* report the number of particles held by each process */
+    // report the number of particles held by each process
     int Nall[global_size];
     MPI_Allgather(&(sys.N), 1, MPI_INT, Nall, 1, MPI_INT, MPI_COMM_WORLD);
     long long checkNtot = 0;
@@ -108,25 +90,26 @@ void initialize(rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, p
             printf("# N[%d]=%d\n", i, Nall[i]);
         checkNtot += Nall[i];
     }
-    /* sanity check */
+    // sanity check 
     if (checkNtot != sys.Ntot) {
         if (global_rank == global_root)
             fprintf(stderr, "\nPARDY PARALLEL CONSISTENCY ERROR: Combined number of particles in all processes (%lld) does not match parameter N (%lld)\n", checkNtot, sys.Ntot);
         MPI_Abort(sys.comm, 7);
     }
-    /* generate momenta */
-    lcg_t rng = lcg_init_rand48(sys.seed);  /* initialize random number
-                                                generator used in gaussian
-                                                instead of "srand48(seed)" */
+    // generate momenta 
+    lcg_t rng = lcg_init_rand48(sys.seed);  // initialize random
+                                            // number generator used
+                                            // in gaussian instead of
+                                            // "srand48(seed)"
     scale = sqrt(sys.T0);
     sys.K = 0;
-    /* must do some skipping (4 random numbers per particle)*/
+    // must do some skipping (4 random numbers per particle)
     lcg_skip(rng, 4*atoms[0].index);
     for (int i = 0; i < sys.N; ++i){
         atoms[i].px = scale*lcg_normal(rng);
         atoms[i].py = scale*lcg_normal(rng);
         atoms[i].pz = scale*lcg_normal(rng);
-        lcg_normal(rng); /* must have even number of normal random numbers */
+        lcg_normal(rng); // must have even number of normal random numbers 
         sys.K += atoms[i].px*atoms[i].px + atoms[i].py*atoms[i].py + atoms[i].pz*atoms[i].pz;
         if (i<(sys.N)-1) {
             int index_diff = atoms[i+1].index - atoms[i].index;
@@ -134,13 +117,13 @@ void initialize(rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, p
                 lcg_skip(rng, 4*(index_diff-1));
         }
     }
-    /* compute instantaneous kinetic temperature and energy */
+    // compute instantaneous kinetic temperature and energy 
     sys.K *= 0.5;
     sortParticlesAndComputeForces(sys.N, atoms, p, sys, work);
     double Utot, Ktot;
     MPI_Reduce(&(sys.U), &Utot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     MPI_Reduce(&(sys.K), &Ktot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    /* report results */
+    // report results
     if (global_rank == global_root) {
         printf("#  step    time    E       U       K       T    <[E-<E>]^2>  walltime(s) cum.walltime(s)\n");
         printf("%7d %7.3f %7.3f %7.3f %7.3f %7.3f   .....         0.000      0.000\n",
@@ -148,29 +131,29 @@ void initialize(rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, p
     }
 }
 
-/* Verlet integration step */
+// Verlet integration step 
 void integrateStep(system_t& sys, rvector<atom_t>& atoms, interaction_pairs_t& p, parallel_work_t& work)
 {
-    /* first momentum half step (forces assume to be computed in
-       initialization or in the last step) */
+    // first momentum half step (forces assume to be computed in
+    // initialization or in the last step)
     #pragma omp parallel for
     for (int i = 0; i < sys.N; ++i) {
         atoms[i].px += 0.5*sys.dt*atoms[i].fx;
         atoms[i].py += 0.5*sys.dt*atoms[i].fy;
         atoms[i].pz += 0.5*sys.dt*atoms[i].fz;
     }
-    /* full free motion step */
+    // full free motion step
     #pragma omp parallel for
     for (int i = 0; i<sys.N; ++i) {
         atoms[i].rx = atoms[i].rx + sys.dt*atoms[i].px;
         atoms[i].ry = atoms[i].ry + sys.dt*atoms[i].py;
         atoms[i].rz = atoms[i].rz + sys.dt*atoms[i].pz;
     }
-    /* send atoms that have digressed too far to other processes (also enforces pbc)*/
+    // send atoms that have digressed too far to other processes (also enforces pbc)
     exchangeParticles(atoms, sys, work);
-    /* positions were changed, so recompute the forces */
+    // positions were changed, so recompute the forces 
     sortParticlesAndComputeForces(sys.N, atoms, p, sys, work);
-    /* final momentum half-step */
+    // final momentum half-step 
     double K2 = 0;
     #pragma omp parallel for reduction(+:K2)
     for (int i = 0; i < sys.N; ++i) {
@@ -179,11 +162,11 @@ void integrateStep(system_t& sys, rvector<atom_t>& atoms, interaction_pairs_t& p
         atoms[i].pz+=0.5*sys.dt*atoms[i].fz;
         K2 += atoms[i].px*atoms[i].px + atoms[i].py*atoms[i].py + atoms[i].pz*atoms[i].pz;
     }
-    /* finish computing K */
+    // finish computing K 
     sys.K = 0.5*K2;
 }
     
-/* integration and measurement */
+// integration and measurement 
 void run(system_t& sys)
 {
     const int Nmax = estimateNmax(sys.N, sys.rho, sys.localL, sys.cellsize);
@@ -197,18 +180,18 @@ void run(system_t& sys)
     rvector<atom_t> atoms(Nmax);
     int       numSteps = (int)(sys.runtime/sys.dt+0.5);
     int       equilSteps = (int)(sys.equil/sys.dt+0.5);   
-    int       count;                 /* counts time steps */
-    int       numPoints = 0;         /* counts measurements */
-    double    sumE = 0;              /* total energy accumulated over steps */
-    double    sumE2 = 0;             /* total energy squared accumulated */
-    double    avgE, avgE2, fluctE;   /* average energy, its square, and its fluctuations */
+    int       count;                 // counts time steps 
+    int       numPoints = 0;         // counts measurements 
+    double    sumE = 0;              // total energy accumulated over steps 
+    double    sumE2 = 0;             // total energy squared accumulated 
+    double    avgE, avgE2, fluctE;   // average energy, its square, and its fluctuations 
     interaction_pairs_alloc(p, Npairsmax);
     work_alloc(work, Nmax, SENDNUM, bufmax, maxsendcells);
-    /* draw initial conditions */
+    // draw initial conditions 
     initialize(atoms, p, sys, work);
     double  walltimestart = MPI_Wtime();
     double  walltimelast = walltimestart;
-    /* perform equilibration steps */
+    // perform equilibration steps 
     for (count = 0; count < equilSteps; ++count) {
         integrateStep(sys, atoms, p, work);
         double Utot, Ktot;
@@ -221,7 +204,7 @@ void run(system_t& sys)
             walltimelast = t;
         }
     }    
-    /* perform rest of time steps */
+    // perform rest of time steps 
     for (count = equilSteps; count<numSteps; ++count) {
         integrateStep(sys, atoms, p, work);
         double Utot, Ktot;
@@ -236,7 +219,7 @@ void run(system_t& sys)
             avgE2  = sumE2/numPoints;
             if (avgE2 > avgE*avgE) {
                 fluctE = sqrt(avgE2-avgE*avgE);
-            } else {  /* correct for round-off */
+            } else {  // correct for round-off 
                 fluctE = 0.0;
             }
             double t = MPI_Wtime();
@@ -249,32 +232,32 @@ void run(system_t& sys)
     work_free(work);
 }
 
-/* program start */
+// program start 
 int main(int argc, char* argv[])
 {
-    /* start mpi with thread support */
+    // start mpi with thread support 
     int required_support_for_threads = MPI_THREAD_FUNNELED, provided_support_for_threads;
     MPI_Init_thread(&argc, &argv, required_support_for_threads, &provided_support_for_threads);
     assert_le(provided_support_for_threads, required_support_for_threads);
-    /* who am i and how many of us are there? */
+    // who am i and how many of us are there? 
     MPI_Comm_size(MPI_COMM_WORLD, &global_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &global_rank);
-    /* new mpi data types */
+    // new mpi data types 
     define_MPI_ATOM();
     define_MPI_PARAMETERS();
-    /* debug? */
+    // debug? 
     ENTERDEBUGGER;
-    /* report parallel setup */
+    // report parallel setup 
     if (global_rank == global_root) {
         printf("#");
         if (global_size != 1)
             printf("Number of processes = %d, ", global_size);
-        /* get number of threads available:  */
+        // get number of threads available:  
         #pragma omp parallel default(none)
         #pragma omp single
         printf("Number of threads = %d\n", omp_get_num_threads());
     }
-    /**/
+    //
     system_t sys;
     if (global_rank == global_root) {
         FILE* file = ((argc>1)?fopen(argv[1],"r"):stdin);

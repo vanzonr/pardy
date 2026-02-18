@@ -1,0 +1,18 @@
+Version history:
+
+  - November 2008:
+    + first version, in C
+  - In Nov 25 2009:
+    + condensed code
+    + OpenMP version
+  - In Aug 2016:
+    + Renamed to ljhpc, included mpi header (not used yet)
+  - In Sep 2016:
+    + Added cells to determine interacting pairs.
+    + Added MPI
+    + Renamed to pardy
+    + Change input format and modularized
+  - February 2026
+    + converting to C++ version
+
+
