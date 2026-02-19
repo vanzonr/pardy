@@ -34,8 +34,8 @@ void sortParticlesAndComputeForces(int N, rvector<atom_t>& atoms, interaction_pa
     cellDivide(atoms, sys);
     // send ghost particles
     long long   bufmax = estimateMaxNGhostPerFaceNeighbor(sys.rho, sys.localL, sys.cellsize);
-    MPI_Request send_requests[SENDNUM];
-    MPI_Request recv_requests[RECVNUM];
+    rvector<MPI_Request> send_requests(SENDNUM);
+    rvector<MPI_Request> recv_requests(RECVNUM);
     int         sendnum = 0;
     int         recvnum = 0;
     assert_ge(work.recv_buffer_atoms.extent(0), RECVNUM);
@@ -82,8 +82,8 @@ void initialize(rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, p
     }
     sys.N = i;
     // report the number of particles held by each process
-    int Nall[global_size];
-    MPI_Allgather(&(sys.N), 1, MPI_INT, Nall, 1, MPI_INT, MPI_COMM_WORLD);
+    rvector<int> Nall(global_size);
+    MPI_Allgather(&sys.N, 1, MPI_INT, &Nall[0], 1, MPI_INT, MPI_COMM_WORLD);
     long long checkNtot = 0;
     for (int i = 0; i < global_size; ++i) {
         if (global_rank == global_root)
@@ -121,8 +121,8 @@ void initialize(rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, p
     sys.K *= 0.5;
     sortParticlesAndComputeForces(sys.N, atoms, p, sys, work);
     double Utot, Ktot;
-    MPI_Reduce(&(sys.U), &Utot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce(&(sys.K), &Ktot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&sys.U, &Utot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&sys.K, &Ktot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     // report results
     if (global_rank == global_root) {
         printf("#  step    time    E       U       K       T    <[E-<E>]^2>  walltime(s) cum.walltime(s)\n");
@@ -195,8 +195,8 @@ void run(system_t& sys)
     for (count = 0; count < equilSteps; ++count) {
         integrateStep(sys, atoms, p, work);
         double Utot, Ktot;
-        MPI_Reduce(&(sys.U), &Utot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&(sys.K), &Ktot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&sys.U, &Utot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&sys.K, &Ktot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         if (global_rank == global_root) {
             double t = MPI_Wtime();
             printf("%7d %7.3f %7.3f %7.3f %7.3f %7.3f   .....    %10.3lf %10.3lf\n",
@@ -208,8 +208,8 @@ void run(system_t& sys)
     for (count = equilSteps; count<numSteps; ++count) {
         integrateStep(sys, atoms, p, work);
         double Utot, Ktot;
-        MPI_Reduce(&(sys.U), &Utot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&(sys.K), &Ktot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&sys.U, &Utot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&sys.K, &Ktot, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         if (global_rank == global_root) {
             double Etot = Ktot + Utot;
             sumE  += Etot;

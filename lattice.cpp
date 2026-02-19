@@ -30,7 +30,7 @@ lattice_t init_partial_lattice(double L, long long N, const vec<double>& origin,
     const double releps = 1.0e-5; // needed for floating point tolerance
     const int Lovera = (int)(cbrt(1.0*N)+0.99999999999);
     const double a = L/Lovera; // lattice distance 
-    int start[3], stop[3];
+    vec<int> start, stop;
     for (int d=0;d<3;d++) {
         start[d] = (origin[d]+0.5*L)/a;
         while (start[d]*a < origin[d]+0.5*L)

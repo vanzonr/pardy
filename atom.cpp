@@ -40,9 +40,9 @@ MPI_Datatype define_MPI_ATOM()
             MPI_INT};
         MPI_Datatype MPI_ATOM_INNER;
         MPI_Type_create_struct(num_atom_properties,
-                               array_of_ones.data(),
-                               array_of_offsets.data(),
-                               array_of_types.data(),
+                               &array_of_ones[0],
+                               &array_of_offsets[0],
+                               &array_of_types[0],
                                &MPI_ATOM_INNER);
         MPI_Type_create_resized(MPI_ATOM_INNER, 0, sizeof(atom_t), &MPI_ATOM);
         MPI_Type_commit(&MPI_ATOM);

@@ -104,9 +104,9 @@ MPI_Datatype define_MPI_PARAMETERS()
             MPI_DOUBLE};
         MPI_Datatype MPI_PARAMETERS_INNER;
         MPI_Type_create_struct(num_parameters,
-                               array_of_ones.data(),
-                               array_of_offsets.data(),
-                               array_of_types.data(),
+                               &array_of_ones[0],
+                               &array_of_offsets[0],
+                               &array_of_types[0],
                                &MPI_PARAMETERS_INNER);
         MPI_Type_create_resized(MPI_PARAMETERS_INNER, 0, sizeof(system_t), &MPI_PARAMETERS);
         MPI_Type_commit(&MPI_PARAMETERS);
