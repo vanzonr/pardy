@@ -13,6 +13,7 @@
 #include <cmath>
 #include <omp.h>
 #include <algorithm>
+#include <fstream>
 #include <mpi.h>
 #include "lcg.h"
 #include "lattice.h"
@@ -260,23 +261,27 @@ int main(int argc, char* argv[])
     //
     system_t sys;
     if (global_rank == global_root) {
-        FILE* file = ((argc>1)?fopen(argv[1],"r"):stdin);
-        if (file == NULL) 
-            MPI_Abort(MPI_COMM_WORLD, 1);
-        key_value_table_t* ini = (key_value_table_t*)calloc(1,sizeof(*ini));
-        kvt_read(*ini, file);
-        sys.Ntot     = kvt_lookup_long_long(*ini, "N");
-        sys.rho      = kvt_lookup_double(*ini, "rho");
-        sys.T0       = kvt_lookup_double(*ini, "T");
-        sys.runtime  = kvt_lookup_double(*ini, "runtime");
-        sys.dt       = kvt_lookup_double(*ini, "dt");
-        sys.seed     = kvt_lookup_long(*ini, "seed");
-        sys.equil    = kvt_lookup_double(*ini, "equil");
-        sys.usecells = kvt_lookup_entry(*ini, "usecells") != NULL;
+        key_value_table_t ini;
+        if (argc>1) {
+            try {
+                std::ifstream file;
+                file.open(argv[1]);
+                kvt_read(ini, file);
+            } catch(...) {
+                MPI_Abort(MPI_COMM_WORLD, 1);    
+            }
+        } else {
+            kvt_read(ini, std::cin);
+        }
+        sys.Ntot     = kvt_lookup_long_long(ini, "N");
+        sys.rho      = kvt_lookup_double(ini, "rho");
+        sys.T0       = kvt_lookup_double(ini, "T");
+        sys.runtime  = kvt_lookup_double(ini, "runtime");
+        sys.dt       = kvt_lookup_double(ini, "dt");
+        sys.seed     = kvt_lookup_long(ini, "seed");
+        sys.equil    = kvt_lookup_double(ini, "equil");
+        sys.usecells = kvt_lookup_bool_with_default(ini, "usecells", false);
         sys.L        = cbrt(sys.Ntot/sys.rho);
-        if (argc > 1 && file != NULL)
-            fclose(file);
-        free(ini);
         printf("#Ntot=%lld rho=%f L=%f T=%f runtime=%f dt=%f seed=%ld equil=%f usecells=%d\n",
                sys.Ntot,sys.rho,sys.L,sys.T0,sys.runtime,sys.dt,sys.seed,sys.equil,sys.usecells);
     }

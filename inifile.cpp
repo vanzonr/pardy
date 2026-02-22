@@ -8,68 +8,51 @@
 ///
 #include "inifile.h"
 #include <cstring>
-#include <cassert>
+#include <string>
+#include <fstream>
 
-const key_value_t* kvt_lookup_entry(const key_value_table_t& table, const char* key)
+key_value_t kvt_lookup_entry(const key_value_table_t& table, const std::string& key)
 {
-    for (int i=0;i<table.length;i++)
-        if (strcmp(key, table.entry[i].key)==0)
-            return table.entry + i;
-    return NULL;
+    return {key, table.at(key)};
 }
 
-const char* kvt_lookup(const key_value_table_t& table, const char* key)
+std::string kvt_lookup(const key_value_table_t& table, const std::string& key)
 {
-    const key_value_t* entry = kvt_lookup_entry(table, key);
-    if (entry != NULL)
-        return entry->value;
-    else {
-        fprintf(stderr, "Warning: could not find a value for '%s'.\n", key);
-        return NULL;
+    try {
+        return table.at(key);
+    } catch (...) {
+        fprintf(stderr, "Warning: could not find a value for '%s'.\n", key.c_str());
+        throw;
     }
 }
 
-const char* kvt_lookup_with_default(const key_value_table_t& table, const char* key, const char* def)
+std::string kvt_lookup_with_default(const key_value_table_t& table, const std::string& key, std::string def)
 {
-    const key_value_t* entry = kvt_lookup_entry(table, key);
-    if (entry != NULL)
-        return entry->value;
+    if (table.find(key) != table.end()) 
+        return table.at(key);
     else
         return def;
 }
 
-const key_value_t* kvt_begin(const key_value_table_t& table)
+key_value_table_t::const_iterator kvt_begin(const key_value_table_t& table)
 {
-    return table.entry;
+    return table.cbegin();
 }
 
-const key_value_t* kvt_end(const key_value_table_t& table)
+key_value_table_t::const_iterator kvt_end(const key_value_table_t& table)
 {
-    return table.entry + table.length;
+    return table.cend();
 }
 
-const key_value_t* kvt_insert(key_value_table_t& table,
-                              const char key[MAXKEYLEN],
-                              const char value[MAXVALUELEN])
+key_value_t kvt_insert(key_value_table_t& table,
+                       const std::string& key,
+                       const std::string& value)
 {
-    key_value_t* existing_entry = (key_value_t*)kvt_lookup_entry(table, key);
-    if (existing_entry==NULL) {
-        int len = table.length;
-        if (len < MAXTABLELEN) {
-            strncpy(table.entry[len].key, key, MAXKEYLEN);
-            strncpy(table.entry[len].value, value, MAXVALUELEN);
-            table.length ++;
-            return table.entry + len;
-        } else {
-            return NULL;
-        }
-    } else {        
-        strncpy(existing_entry->value, value, MAXVALUELEN);
-        return existing_entry;
-    }
+    table[key] = value;
+    return {key, value};
 }
 
-void kvt_read_name(key_value_table_t& table, const char* filename);
+void kvt_read_name(key_value_table_t& table, const std::string& filename);
 
 static void TRIMWHITESPACE(char** str)
 {
@@ -117,12 +100,12 @@ static char* process_keyval_inputline(char** key, char** value)
     }
 }
 
-static void kvt_read_knowingly(key_value_table_t& table, FILE* f, const char* openfiles)
+static void kvt_read_knowingly(key_value_table_t& table, std::istream& f, const std::string& openfiles)
 {    
-    char*  line = NULL;
-    size_t len = 0;
     char empty[1] = "";
-    while (getline(&line, &len, f) != -1) {
+    std::string cppline;
+    while (! std::getline(f, cppline).eof()) {
+        char* line = const_cast<char*>(cppline.c_str());
         char* key = line;
         char* value = NULL;
         if (key) {
@@ -147,8 +130,8 @@ static void kvt_read_knowingly(key_value_table_t& table, FILE* f, const char* op
                 // trim surrounding quotes 
                 TRIMQUOTES(&args);
                 if (strcmp(command,"include")==0) {
-                    if (openfiles && strcmp(args,openfiles)==0)
-                        fprintf(stderr, "Warning: file '%s' included recursively; skipping.\n", openfiles);
+                    if (openfiles != "" && strcmp(args,openfiles.c_str())==0)
+                        fprintf(stderr, "Warning: file '%s' included recursively; skipping.\n", openfiles.c_str());
                     else
                         kvt_read_name(table, args);
                 }
@@ -161,117 +144,92 @@ static void kvt_read_knowingly(key_value_table_t& table, FILE* f, const char* op
             }
         }
     }
-    free(line);
 }
 
-void kvt_read_name(key_value_table_t& table, const char* filename)
+void kvt_read_name(key_value_table_t& table, const std::string& filename)
 {
-    FILE* f  = fopen(filename, "r");
-    if (f == NULL) {
-        fprintf(stderr, "Warning: file '%s' could not be read; skipping.\n", filename);
-    } else {
-        kvt_read_knowingly(table, f, filename);
-        fclose(f);
+    std::ifstream f;
+    try {
+        f.open(filename);
+    } catch (...) {
+        fprintf(stderr, "Warning: file '%s' could not be read; skipping.\n", filename.c_str());
+        throw;
     }
+    kvt_read_knowingly(table, f, filename);
+    f.close();
 }
 
-void kvt_read(key_value_table_t& table, FILE* f) {
-    kvt_read_knowingly(table, f, NULL);
+void kvt_read(key_value_table_t& table, std::istream& f) {
+    kvt_read_knowingly(table, f, "");
 }
 
 
-int kvt_lookup_int(const key_value_table_t& table, const char* key)
+int kvt_lookup_bool(const key_value_table_t& table, const std::string& key)
 {
-    const char* value = kvt_lookup(table, key);
-    if (value) {
-        int result;
-        sscanf(value, "%d", &result);
-        return result;
-    } else {
-        exit(1);
-    }
+    std::string value = kvt_lookup(table, key);
+    for (auto& ch: value) ch = std::toupper(ch);
+    if (value == "FALSE" || value == "0" || value == "NO" || value == "NONE" || value =="N")
+        return false;
+    else
+        return true;
 }
 
-int kvt_lookup_int_with_default(const key_value_table_t& table, const char* key, int def)
+int kvt_lookup_bool_with_default(const key_value_table_t& table, const std::string& key, bool def)
 {
-    const char* value = kvt_lookup(table, key);
-    if (value) {
-        int result;
-        sscanf(value, "%d", &result);
-        return result;
-    } else {
+    if (table.find(key) != table.end())
+        return kvt_lookup_bool(table, key);
+    else
         return def;
-    }
 }
 
-long kvt_lookup_long(const key_value_table_t& table, const char* key)
+int kvt_lookup_int(const key_value_table_t& table, const std::string& key)
 {
-    const char* value = kvt_lookup(table, key);
-    if (value) {
-        long result;
-        sscanf(value, "%ld", &result);
-        return result;
-    } else {
-        exit(1);
-    }
+    return std::stoi(kvt_lookup(table, key));
 }
 
-long kvt_lookup_long_with_default(const key_value_table_t& table, const char* key, long def)
+int kvt_lookup_int_with_default(const key_value_table_t& table, const std::string& key, int def)
 {
-    const char* value = kvt_lookup(table, key);
-    if (value) {
-        long result;
-        sscanf(value, "%ld", &result);
-        return result;
-    } else {
+    if (table.find(key) != table.end())
+        return kvt_lookup_int(table, key);
+    else
         return def;
-    }
 }
 
-long long kvt_lookup_long_long(const key_value_table_t& table, const char* key)
+long kvt_lookup_long(const key_value_table_t& table, const std::string& key)
 {
-    const char* value = kvt_lookup(table, key);
-    if (value) {
-        long long result;
-        sscanf(value, "%lld", &result);
-        return result;
-    } else {
-        exit(1);
-    }
+    return std::stol(kvt_lookup(table, key));
 }
 
-long long kvt_lookup_long_long_with_default(const key_value_table_t& table, const char* key, long long def)
+long kvt_lookup_long_with_default(const key_value_table_t& table, const std::string& key, long def)
 {
-    const char* value = kvt_lookup(table, key);
-    if (value) {
-        long long result;
-        sscanf(value, "%lld", &result);
-        return result;
-    } else {
+    if (table.find(key) != table.end())
+        return kvt_lookup_long(table, key);
+    else
         return def;
-    }
 }
 
-double kvt_lookup_double(const key_value_table_t& table, const char* key)
+long long kvt_lookup_long_long(const key_value_table_t& table, const std::string& key)
 {
-    const char* value = kvt_lookup(table, key);
-    if (value) {
-        double result;
-        sscanf(value, "%lf", &result);
-        return result;
-    } else {
-        exit(1);
-    }
+    return std::stoll(kvt_lookup(table, key));
 }
 
-double kvt_lookup_double_with_default(const key_value_table_t& table, const char* key, double def)
+long long kvt_lookup_long_long_with_default(const key_value_table_t& table, const std::string& key, long long def)
 {
-    const char* value = kvt_lookup(table, key);
-    if (value) {
-        double result;
-        sscanf(value, "%lf", &result);
-        return result;
-    } else {
+    if (table.find(key) != table.end())
+        return kvt_lookup_long_long(table, key);
+    else
         return def;
-    }
+}
+
+double kvt_lookup_double(const key_value_table_t& table, const std::string& key)
+{
+    return std::stod(kvt_lookup(table, key));
+}
+
+double kvt_lookup_double_with_default(const key_value_table_t& table, const std::string& key, double def)
+{
+    if (table.find(key) != table.end())
+        return kvt_lookup_double(table, key);
+    else
+        return def;
 }
