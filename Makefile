@@ -1,8 +1,10 @@
 # Makefile using g++ for pardy.cpp
 
 CXX=mpicxx
-CXXFLAGS=-std=c++11 -fopenmp -O3 -Wall -Wfatal-errors -g -flto -march=native -ffast-math -I./rarray 
-LDFLAGS=-g -fopenmp -O3 -flto
+OPTFLAGS=-O3 -flto=auto -ffast-math
+#OPTFLAGS=-O0 -g
+CXXFLAGS=-std=c++11 -fopenmp -Wall -Wfatal-errors -march=native $(OPTFLAGS) -I./rarray 
+LDFLAGS=-fopenmp $(OPTFLAGS)
 LDLIBS=
 
 APPNAME=pardy
@@ -31,7 +33,7 @@ forces.o: forces.cpp forces.h global.h atom.h parallelwork.h
 global.o: global.cpp global.h
 inifile.o: inifile.cpp inifile.h
 lattice.o: lattice.cpp lattice.h
-lcg.o: lcg.cpp lcg.h
+lcg.o: lcg.cpp lcg.h lcg48.h
 mpicommunication.o: mpicommunication.cpp mpicommunication.h atom.h system.h parallelwork.h cells.h forces.h global.h debug.h estimates.h
 parallelwork.o: parallelwork.cpp parallelwork.h atom.h
 pardy.o: pardy.cpp lcg.h lattice.h debug.h system.h atom.h inifile.h global.h estimates.h parallelwork.h forces.h cells.h mpicommunication.h

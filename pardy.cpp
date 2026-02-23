@@ -102,15 +102,16 @@ void initialize(rvector<atom_t>& atoms, interaction_pairs_t& p, system_t& sys, p
                                             // number generator used
                                             // in gaussian instead of
                                             // "srand48(seed)"
+    lcg_dist_t normal = lcg_init_normal(0.0, 1.0, true);// normal distribution
     scale = sqrt(sys.T0);
     sys.K = 0;
     // must do some skipping (4 random numbers per particle)
     lcg_skip(rng, 4*atoms[0].index);
     for (int i = 0; i < sys.N; ++i){
-        atoms[i].px = scale*lcg_normal(rng);
-        atoms[i].py = scale*lcg_normal(rng);
-        atoms[i].pz = scale*lcg_normal(rng);
-        lcg_normal(rng); // must have even number of normal random numbers 
+        atoms[i].px = scale*lcg_dist_apply(rng, normal);
+        atoms[i].py = scale*lcg_dist_apply(rng, normal);
+        atoms[i].pz = scale*lcg_dist_apply(rng, normal);
+        lcg_dist_apply(rng, normal); // must have even number of normal random numbers 
         sys.K += atoms[i].px*atoms[i].px + atoms[i].py*atoms[i].py + atoms[i].pz*atoms[i].pz;
         if (i<(sys.N)-1) {
             int index_diff = atoms[i+1].index - atoms[i].index;
